@@ -1,45 +1,74 @@
 # OpenCoven
+
 > An open-source, AI-native workspace for building with agents.
 
-[Website](https://OpenCoven.ai) · [Discord](https://discord.gg/OpenCoven) · [X](https://x.com/OpenCvn)
+[Website](https://opencoven.ai) · [Discord](https://discord.gg/OpenCoven) · [X](https://x.com/OpenCvn)
 
-## What is OpenCoven?
-OpenCoven is a workspace for agentic builders — people creating, coordinating, and working alongside AI agents.
+---
 
-It brings agents, tools, skills, chats, terminals, browsers, codebases, and workflows into one extensible environment, so your AI systems can feel less like scattered scripts and more like a living workspace.
+**Your agents, tools, and context — scattered across chats, repos, terminals, and browsers.**
 
-## Why OpenCoven?
+OpenCoven pulls it all into one local-first, hackable workspace where AI agents remember context, use real tools, and work alongside you across every surface.
 
-**Modern AI work is fragmented.**
+Less duct-taped scripts. More living workspace.
 
-Your agents live in one place.  
-Your tools live somewhere else.  
-Your context is spread across chats, repos, terminals, docs, browsers, and local files.
+## Get started
 
-**OpenCoven helps unify that mess.**
+Install the [CLI](https://www.npmjs.com/package/@opencoven/cli):
 
-It gives builders a local-first, extensible workspace for creating agent systems that can remember context, use tools, collaborate across surfaces, and feel personal instead of generic.
+```bash
+npm install -g @opencoven/cli
+```
 
-## Features
-- **Agent-native workspace** — build, run, and coordinate AI agents in one place
-- **Tool and skill orchestration** — connect agents to the tools they need to act
-- **Local-first workflows** — keep your workspace close, hackable, and under your control
-- **Extensible by design** — add skills, integrations, agents, and custom workflows
-- **Multi-surface experiences** — bring agents into desktop, web, chat, terminal, and beyond
-- **Community-driven ecosystem** — share extensions, patterns, and agent setups with other builders
+Check your setup (detects harnesses, prints fix hints):
 
-## Status
-OpenCoven is early and actively evolving.
+```bash
+coven doctor
+```
 
-We’re building in public with the community, and the project will continue to change quickly as the agentic workspace model takes shape.
+Enter your project and launch:
 
-## Quickstart
-Coming soon.
+```bash
+cd my-project
+coven
+```
+
+That's it — you're in. There's no init step: the directory you run from *is* your workspace. On first launch, OpenCoven offers to download the engine (version-pinned, checksum-verified), then drops you into an interactive workspace. Give it a task straight from the prompt:
+
+```bash
+coven "fix the failing tests"
+```
+
+Prefer explicit control? Run the daemon and target a specific agent:
+
+```bash
+coven daemon start
+coven run codex "fix the failing tests"
+coven run claude "polish this UI"
+coven sessions          # browse and inspect sessions
+```
+
+## Why builders use it
+
+- 🧠 **Agent-native** — build, run, and coordinate agents in one place
+- 🔧 **Real tool access** — connect agents to what they need to actually do the work
+- 💻 **Local-first** — your workspace stays close, hackable, and yours
+- 🧩 **Extensible** — add skills, integrations, agents, and custom workflows
+- 🌐 **Multi-surface** — desktop, web, chat, terminal, and beyond
+
+## Contribute
+
+OpenCoven is early, open, and moving fast — the best time to shape it.
+
+- 🐛 [Open an issue](https://github.com/OpenCoven/coven/issues) — bugs, ideas, feature requests
+- 🔀 [Send a PR](https://github.com/OpenCoven/coven/pulls) — start with a [good first issue](https://github.com/OpenCoven/coven/labels/good%20first%20issue)
+- 💬 [Join the Discord](https://discord.gg/OpenCoven) — plan features and share what you're building
+- 🧩 Build a skill or integration and share it with the Coven
+
+We're building in public with the community. Jump in early and help define what the agentic workspace becomes.
 
 ## Community
-OpenCoven is for builders, tinkerers, researchers, and weird little agent enjoyers.
 
-Join the Coven 🌙
-- Website: https://OpenCoven.ai
-- Discord: https://discord.gg/OpenCoven
-- X: https://x.com/OpenCvn
+For builders, tinkerers, researchers, and weird little agent enjoyers.
+
+**Join the Coven** 🌙 · [Website](https://opencoven.ai) · [Discord](https://discord.gg/OpenCoven) · [X](https://x.com/OpenCvn)
