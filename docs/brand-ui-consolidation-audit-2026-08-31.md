@@ -44,7 +44,7 @@ A familiar protocol cannot credibly insist on one authority for identity and mut
 | [`OpenCoven/coven-design`](https://github.com/OpenCoven/coven-design) | private, current `main` | Double-blind evaluation/capture tooling; naming collides with design-system and brand work. |
 | [`OpenCoven/coven-landing`](https://github.com/OpenCoven/coven-landing) | current `main` | Pins Brand and UI revisions, vendors exact artifacts, and verifies canonical bytes and interaction hooks. |
 | [`OpenCoven/coven-cave`](https://github.com/OpenCoven/coven-cave) | current `main` | Mature production design language and drift tests, but its UI-boundary documentation is already stale relative to the live UI repository. |
-| Open pull requests | Brand `#4`; UI `#2`, `#3`, `#6` | Brand #4 duplicates a ratified profile; UI #2/#3 are stacked against moving bases; UI #6 is a draft named `noop`. |
+| Open pull requests | [OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4); [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2), [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3), [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6) | [OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4) duplicates a ratified profile; [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) and [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) are stacked against moving bases; [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6) is a draft named `noop`. |
 
 ## Current-state audit
 
@@ -541,9 +541,9 @@ This avoids forcing a marketing palette into dense product UI while retaining on
 
 ### D. Clean the current PR topology
 
-- **Close UI #6** unless it has a documented purpose; a `noop` draft should not be part of the release graph.
-- **Rebase or recreate UI #2 directly on current `main`.** Preserve the visual-receipt work but eliminate its stale base and 76-commit ambiguity.
-- **Restack UI #3 on the cleaned #2 or split it into reviewable PRs:** contracts/adapters, components, specimen route, registry output.
+- **Close [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)** unless it has a documented purpose; a `noop` draft should not be part of the release graph.
+- **Rebase or recreate [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) directly on current `main`.** Preserve the visual-receipt work but eliminate its stale base and 76-commit ambiguity.
+- **Restack [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) on the cleaned #2 or split it into reviewable PRs:** contracts/adapters, components, specimen route, registry output.
 - update every PR body from claimed historical mergeability to current evidence;
 - avoid stacking long-lived branches on feature branches once shared foundation work has landed.
 
@@ -751,8 +751,8 @@ Add root `AGENTS.md` to Brand and UI containing:
 
 ### Phase 0 — containment, 0–48 hours
 
-- [ ] Mark Brand #4 as superseded/rework-required; prevent duplicate profile merge.
-- [ ] Close UI #6.
+- [ ] Mark [OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4) as superseded/rework-required; prevent duplicate profile merge.
+- [ ] Close [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6).
 - [ ] Freeze `coven-design-system` feature work.
 - [ ] Ratify the Brand/UI/product ownership ADR.
 - [ ] Protect `brand/main` and `ui/main`.
@@ -782,7 +782,7 @@ Add root `AGENTS.md` to Brand and UI containing:
 - [ ] Inventory all 62 design-system families against current UI.
 - [ ] Port only missing, high-value components.
 - [ ] Preserve behavior/a11y tests and migration provenance.
-- [ ] Restack UI #2/#3 into a clean sequence.
+- [ ] Restack [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) and [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) into a clean sequence.
 - [ ] Add release/version/license workflow.
 - [ ] Publish a release candidate and registry canary.
 
