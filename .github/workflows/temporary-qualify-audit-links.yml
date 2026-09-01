@@ -1,0 +1,72 @@
+name: Temporary audit link qualification
+
+on:
+  push:
+    branches:
+      - docs/brand-ui-consolidation-audit-2026-08-31
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+          ref: ${{ github.ref_name }}
+      - name: Qualify organization-wide PR references
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+
+          const path = 'docs/brand-ui-consolidation-audit-2026-08-31.md';
+          let source = readFileSync(path, 'utf8');
+          const replacements = [
+            [
+              'Brand `#4`; UI `#2`, `#3`, `#6`',
+              '[OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4); [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2), [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3), [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)',
+            ],
+            [
+              'UI #2/#3/#6',
+              '[OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2), [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3), and [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)',
+            ],
+            [
+              'UI #6/#2/#3',
+              '[OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6), [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2), and [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3)',
+            ],
+            [
+              'UI #2/#3',
+              '[OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) and [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3)',
+            ],
+            ['Brand #4', '[OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4)'],
+            ['UI #6', '[OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)'],
+            ['UI #2', '[OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2)'],
+            ['UI #3', '[OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3)'],
+          ];
+          for (const [before, after] of replacements) {
+            source = source.replaceAll(before, after);
+          }
+          if (/\b(?:Brand|UI)\s+`?#\d+/u.test(source)) {
+            throw new Error('Unqualified cross-repository PR reference remains.');
+          }
+          writeFileSync(path, source);
+          NODE
+      - name: Verify reviewed links and Markdown hygiene
+        run: |
+          grep -Fq '[OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4)' docs/brand-ui-consolidation-audit-2026-08-31.md
+          grep -Fq '[OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2)' docs/brand-ui-consolidation-audit-2026-08-31.md
+          grep -Fq '[OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3)' docs/brand-ui-consolidation-audit-2026-08-31.md
+          grep -Fq '[OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)' docs/brand-ui-consolidation-audit-2026-08-31.md
+          git diff --check
+      - name: Commit qualified references and retire temporary workflow
+        run: |
+          git rm .github/workflows/temporary-qualify-audit-links.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/brand-ui-consolidation-audit-2026-08-31.md
+          git commit -m 'docs: qualify cross-repository PR references'
+          git push origin HEAD:${{ github.ref_name }}
