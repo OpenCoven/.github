@@ -1,0 +1,120 @@
+{
+  "$schema": "../schemas/initiative.schema.json",
+  "schema_version": "opencoven.initiative/v1",
+  "id": "familiar-identity-continuity-v1",
+  "title": "Familiar identity, continuity, authority, and session-binding conformance",
+  "status": "active",
+  "priority": "P0",
+  "decision_owner": "BunsDev",
+  "technical_dri": "BunsDev",
+  "ownership_status": "bootstrap-single-owner",
+  "outcome": "Ensure every familiar session binds an exact authorized familiar root and revision, protected identity transitions are principal-authorized and atomic, and continuity can be reconstructed without introducing a second identity root.",
+  "non_goals": [
+    "Making SPAR an identity database or IAM replacement.",
+    "Allowing Psyche, Cave, task text, model output, or caller fields to create protected authority.",
+    "Collapsing structural, runtime, continuity, privacy, and interoperability evidence into one generic compliance claim."
+  ],
+  "decisions": [
+    "ADR-0001",
+    "ADR-0002"
+  ],
+  "dependencies": [
+    "organization-governance-plane-v1"
+  ],
+  "workstreams": [
+    {
+      "repository": "familiar-contract",
+      "responsibility": "Define familiar root, principal binding, revision, sameness, transition, and retirement semantics.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-threads",
+      "responsibility": "Authorize protected transitions with replay, revocation, recovery, and proposal-versus-commit semantics.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "psyche",
+      "responsibility": "Snapshot authorized identity into orchestration without redefining it.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven",
+      "responsibility": "Bind direct and orchestrated sessions and atomically verify/apply protected transitions.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-runtimes",
+      "responsibility": "Express runtime capabilities and conformance without overstating security properties.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "sdk",
+      "responsibility": "Expose constrained read/verify/subscribe bindings before mutation surfaces.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-memory",
+      "responsibility": "Remain a read-only projection and prove mutation is impossible through its contract.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-cave",
+      "responsibility": "Make revisions, pending proposals, provenance, active embodiments, staleness, and uncertainty legible.",
+      "issues": [],
+      "state": "in-progress"
+    }
+  ],
+  "exit_criteria": [
+    {
+      "id": "EC-01",
+      "statement": "Cross-repository identity ownership is ratified.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-02",
+      "statement": "Stable familiar-root and same-familiar/fork/succession semantics are normative.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-03",
+      "statement": "Principal authorization is cryptographically verifiable and replay resistant.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-04",
+      "statement": "Every direct and orchestrated session pins an exact authorized root and revision.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-05",
+      "statement": "Final authorization verification and commit are atomic or use one immutable snapshot.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-06",
+      "statement": "Transition receipts, content-addressed history, privacy lifecycle, and replica revocation have golden vectors.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-07",
+      "statement": "Conformance profiles are reported separately against immutable artifacts.",
+      "state": "open",
+      "evidence": []
+    }
+  ],
+  "review_by": "2026-10-03",
+  "authority_boundary": "This initiative coordinates responsibility and evidence. It does not grant protected identity, authorization, runtime, persistence, release, publication, or GitHub-administration authority."
+}

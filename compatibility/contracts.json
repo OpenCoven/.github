@@ -1,0 +1,43 @@
+{
+  "$schema": "../schemas/contracts.schema.json",
+  "schema_version": "opencoven.contract-index/v1",
+  "contracts": [
+    {
+      "id": "familiar.contract.v1",
+      "owner": "familiar-contract",
+      "status": "specified",
+      "immutable_release_required": true
+    },
+    {
+      "id": "threads.protected-decision.v1",
+      "owner": "coven-threads",
+      "status": "specified",
+      "immutable_release_required": true
+    },
+    {
+      "id": "psyche.control.v1",
+      "owner": "psyche",
+      "status": "specified",
+      "immutable_release_required": true
+    },
+    {
+      "id": "coven.daemon.v1",
+      "owner": "coven",
+      "status": "implemented",
+      "immutable_release_required": true
+    },
+    {
+      "id": "coven.runtime-descriptor.v1",
+      "owner": "coven-runtimes",
+      "status": "implemented",
+      "immutable_release_required": true
+    },
+    {
+      "id": "opencoven.repository-registry.v1",
+      "owner": ".github",
+      "status": "implemented-pending-merge",
+      "immutable_release_required": false
+    }
+  ],
+  "claim_rule": "A listed contract status is coordination metadata. A security, privacy, continuity, interoperability, or full-conformance claim requires exact artifact and profile evidence from the owning repository."
+}

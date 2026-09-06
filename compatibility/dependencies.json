@@ -1,0 +1,96 @@
+{
+  "$schema": "../schemas/dependencies.schema.json",
+  "schema_version": "opencoven.dependencies/v1",
+  "edges": [
+    {
+      "producer": "familiar-contract",
+      "consumer": "coven-threads",
+      "relationship": "identity-contract",
+      "required_evidence": "immutable-contract-and-vectors"
+    },
+    {
+      "producer": "familiar-contract",
+      "consumer": "psyche",
+      "relationship": "identity-snapshot",
+      "required_evidence": "exact-root-and-revision-binding"
+    },
+    {
+      "producer": "familiar-contract",
+      "consumer": "coven",
+      "relationship": "session-identity-binding",
+      "required_evidence": "real-daemon-conformance"
+    },
+    {
+      "producer": "coven-threads",
+      "consumer": "coven",
+      "relationship": "protected-decision",
+      "required_evidence": "atomic-verify-and-commit"
+    },
+    {
+      "producer": "psyche",
+      "consumer": "coven",
+      "relationship": "orchestrated-work",
+      "required_evidence": "task-lane-lease-receipt-canary"
+    },
+    {
+      "producer": "coven-runtimes",
+      "consumer": "coven",
+      "relationship": "runtime-descriptor",
+      "required_evidence": "registry-digest-and-conformance"
+    },
+    {
+      "producer": "coven",
+      "consumer": "sdk",
+      "relationship": "public-client-contract",
+      "required_evidence": "packed-artifact-canary"
+    },
+    {
+      "producer": "coven",
+      "consumer": "coven-memory",
+      "relationship": "read-only-memory-projection",
+      "required_evidence": "mutation-negative-vectors"
+    },
+    {
+      "producer": "coven",
+      "consumer": "coven-cave",
+      "relationship": "oversight-api",
+      "required_evidence": "real-daemon-e2e"
+    },
+    {
+      "producer": "psyche",
+      "consumer": "psyche-build",
+      "relationship": "orchestration-client",
+      "required_evidence": "golden-workflow-receipts"
+    },
+    {
+      "producer": "coven",
+      "consumer": "coven-code",
+      "relationship": "terminal-execution",
+      "required_evidence": "headless-brief-result-canary"
+    },
+    {
+      "producer": "brand",
+      "consumer": "ui",
+      "relationship": "specimen-token-consumer",
+      "required_evidence": "immutable-brand-lock"
+    },
+    {
+      "producer": "brand",
+      "consumer": "coven-cave",
+      "relationship": "production-brand-consumer",
+      "required_evidence": "immutable-brand-lock-and-ui-canary"
+    },
+    {
+      "producer": "brand",
+      "consumer": "coven-landing",
+      "relationship": "public-web-brand-consumer",
+      "required_evidence": "canonical-profile-lock"
+    },
+    {
+      "producer": "sdk",
+      "consumer": "coven-docs",
+      "relationship": "documented-public-client",
+      "required_evidence": "released-artifact-example-test"
+    }
+  ]
+}

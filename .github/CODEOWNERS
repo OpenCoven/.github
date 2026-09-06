@@ -1,0 +1,17 @@
+# Bootstrap ownership. Ruleset enforcement is tracked in OpenCoven/.github#6.
+* @BunsDev
+
+/AGENTS.md @BunsDev
+/governance/ @BunsDev
+/initiatives/ @BunsDev
+/decisions/ @BunsDev
+/compatibility/ @BunsDev
+/policies/ @BunsDev
+/schemas/ @BunsDev
+/scripts/ @BunsDev
+/tests/ @BunsDev
+/.github/workflows/ @BunsDev
+/.github/CODEOWNERS @BunsDev
+/SECURITY.md @BunsDev
+/PROVENANCE.md @BunsDev
+/PATENTS.md @BunsDev

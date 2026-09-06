@@ -1,0 +1,104 @@
+{
+  "$schema": "../schemas/initiative.schema.json",
+  "schema_version": "opencoven.initiative/v1",
+  "id": "public-portfolio-consolidation-2026",
+  "title": "Reduce public portfolio ambiguity and duplicate canonical ownership",
+  "status": "active",
+  "priority": "P0",
+  "decision_owner": "BunsDev",
+  "technical_dri": "BunsDev",
+  "ownership_status": "bootstrap-single-owner",
+  "outcome": "Move every public repository toward retain, consolidate, private incubation, archive, or retirement using reversible evidence gates and zero broken references.",
+  "non_goals": [
+    "Deleting repositories before package, release, installer, webhook, domain, and dependency references are cleared.",
+    "Moving useful implementation without provenance.",
+    "Using repository count alone as a success metric."
+  ],
+  "decisions": [
+    "ADR-0001",
+    "ADR-0003"
+  ],
+  "dependencies": [
+    "organization-governance-plane-v1"
+  ],
+  "workstreams": [
+    {
+      "repository": ".github",
+      "responsibility": "Maintain disposition records, retirement procedure, drift evidence, and portfolio exit criteria.",
+      "issues": [
+        "OpenCoven/.github#5"
+      ],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-code",
+      "responsibility": "Receive non-duplicative coding adapter, fixture, and workflow value from legacy coding repositories.",
+      "issues": [],
+      "state": "planned"
+    },
+    {
+      "repository": "brand",
+      "responsibility": "Retain canonical brand-profile authority during design-system consolidation.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "ui",
+      "responsibility": "Remain a specimen lab and consume Brand without claiming production authority.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-cave",
+      "responsibility": "Own production UI/mobile behavior and evaluate overlapping product experiments.",
+      "issues": [],
+      "state": "planned"
+    },
+    {
+      "repository": "coven-docs",
+      "responsibility": "Receive accurately named documentation retrieval ownership where appropriate.",
+      "issues": [],
+      "state": "planned"
+    }
+  ],
+  "exit_criteria": [
+    {
+      "id": "EC-01",
+      "statement": "Every public repository has a reviewed lifecycle and disposition.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-02",
+      "statement": "No public canonical domain has more than one owner.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-03",
+      "statement": "Each consolidation preserves licenses, provenance, issues, releases, and useful history.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-04",
+      "statement": "Each archive or retirement passes the reference, package, release, installer, domain, and rollback gate.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-05",
+      "statement": "No visibility change, archive, transfer, or deletion occurs without explicit authorization and recorded evidence.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-06",
+      "statement": "Generated portfolio and live GitHub inventory agree.",
+      "state": "open",
+      "evidence": []
+    }
+  ],
+  "review_by": "2026-10-03",
+  "authority_boundary": "This initiative coordinates responsibility and evidence. It does not grant protected identity, authorization, runtime, persistence, release, publication, or GitHub-administration authority."
+}

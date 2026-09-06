@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opencoven.ai/schemas/repository-registry-v1.json",
+  "title": "OpenCoven public repository registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "organization",
+    "scope",
+    "defaults",
+    "repositories"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.repository-registry/v1"
+    },
+    "organization": {
+      "const": "OpenCoven"
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "visibility",
+        "observed_as_of",
+        "expected_public_repository_count",
+        "private_inventory"
+      ],
+      "properties": {
+        "visibility": {
+          "const": "public-only"
+        },
+        "observed_as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "expected_public_repository_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "private_inventory": {
+          "const": "federated-and-intentionally-omitted"
+        },
+        "private_overlay_policy": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "defaults": {
+      "type": "object",
+      "required": [
+        "visibility",
+        "observed",
+        "owner",
+        "technical_dri",
+        "ownership_status",
+        "canonical_domains",
+        "does_not_own",
+        "disposition",
+        "agent_manifest",
+        "security_support"
+      ],
+      "properties": {
+        "visibility": {
+          "const": "public"
+        },
+        "observed": {
+          "type": "object",
+          "properties": {
+            "default_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "archived": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "technical_dri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ownership_status": {
+          "enum": [
+            "bootstrap-single-owner",
+            "separated",
+            "delegated",
+            "vacant"
+          ]
+        },
+        "canonical_domains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "does_not_own": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "disposition": {
+          "type": "object",
+          "required": ["state", "review_by"],
+          "properties": {
+            "state": {
+              "type": "string",
+              "minLength": 1
+            },
+            "review_by": {
+              "type": "string",
+              "format": "date"
+            },
+            "destination": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "agent_manifest": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "enforced",
+                "planned",
+                "exempt"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "security_support": {
+          "enum": [
+            "active",
+            "limited",
+            "unsupported",
+            "historical"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "repositories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "lifecycle",
+          "canonicality",
+          "risk_class",
+          "purpose"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[.A-Za-z0-9_-]+$"
+          },
+          "lifecycle": {
+            "enum": [
+              "incubating",
+              "active",
+              "maintenance",
+              "deprecated",
+              "archived",
+              "tombstone"
+            ]
+          },
+          "canonicality": {
+            "enum": [
+              "canonical",
+              "supporting",
+              "specimen",
+              "historical",
+              "none"
+            ]
+          },
+          "risk_class": {
+            "enum": [
+              "R0",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "visibility": {
+            "const": "public"
+          },
+          "observed": {
+            "type": "object",
+            "properties": {
+              "default_branch": {
+                "type": "string",
+                "minLength": 1
+              },
+              "archived": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "technical_dri": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ownership_status": {
+            "enum": [
+              "bootstrap-single-owner",
+              "separated",
+              "delegated",
+              "vacant"
+            ]
+          },
+          "canonical_domains": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "does_not_own": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "disposition": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "minLength": 1
+              },
+              "review_by": {
+                "type": "string",
+                "format": "date"
+              },
+              "destination": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "agent_manifest": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "enforced",
+                  "planned",
+                  "exempt"
+                ]
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          "security_support": {
+            "enum": [
+              "active",
+              "limited",
+              "unsupported",
+              "historical"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

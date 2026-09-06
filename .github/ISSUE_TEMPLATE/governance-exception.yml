@@ -1,0 +1,63 @@
+name: Governance exception
+description: Request a narrow, compensating, expiring policy exception
+labels: [governance, exception]
+body:
+  - type: input
+    id: control
+    attributes:
+      label: Control ID
+      placeholder: GOV-000
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Exact scope
+      description: Name public repositories/paths only. Do not disclose private inventory or sensitive data.
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Exception owner
+    validations:
+      required: true
+  - type: input
+    id: approver
+    attributes:
+      label: Required approving authority
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale and risk
+    validations:
+      required: true
+  - type: textarea
+    id: compensating
+    attributes:
+      label: Compensating controls
+    validations:
+      required: true
+  - type: input
+    id: expires
+    attributes:
+      label: Expiry date
+      description: Maximum 90 days unless a stricter policy applies.
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Remediation and verification
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary
+      options:
+        - label: This exception does not grant protected runtime, release, publication, destructive, or GitHub-administration authority.
+          required: true
