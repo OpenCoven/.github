@@ -115,7 +115,7 @@ This repository should survive consolidation and receive the reusable implementa
    Landing consumes the framework-neutral contract rather than the React package, which is appropriate. Cave deliberately re-expresses patterns. The package still needs at least one controlled consumer canary before it is treated as a stable shared dependency.
 
 4. **Open PR topology is carrying unnecessary risk.**  
-   PR #2 is open and currently reported non-mergeable against an old `main`; PR #3 is stacked on #2 rather than `main`; PR #6 is a draft `noop` using the same visual-review head. This obscures the actual integration sequence.
+   OpenCoven/ui#2 is open and currently reported non-mergeable against an old `main`; OpenCoven/ui#3 is stacked on OpenCoven/ui#2 rather than `main`; OpenCoven/ui#6 is a draft `noop` using the same visual-review head. This obscures the actual integration sequence.
 
 5. **Cave’s documentation is stale about UI.**  
    Cave still says UI is not a packaged npm library, while UI now explicitly documents `@opencoven/ui`, registry installation, package builds, and clean-consumer tests.
@@ -543,7 +543,7 @@ This avoids forcing a marketing palette into dense product UI while retaining on
 
 - **Close [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6)** unless it has a documented purpose; a `noop` draft should not be part of the release graph.
 - **Rebase or recreate [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) directly on current `main`.** Preserve the visual-receipt work but eliminate its stale base and 76-commit ambiguity.
-- **Restack [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) on the cleaned #2 or split it into reviewable PRs:** contracts/adapters, components, specimen route, registry output.
+- **Restack [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) on the cleaned OpenCoven/ui#2 or split it into reviewable PRs:** contracts/adapters, components, specimen route, registry output.
 - update every PR body from claimed historical mergeability to current evidence;
 - avoid stacking long-lived branches on feature branches once shared foundation work has landed.
 
@@ -684,7 +684,7 @@ opencoven-brand-kit-v1.1.0/
 Why:
 
 - `main` already has canonical `web/profile.css`, `web/profile.json`, and `web/assets/mark.svg` at version `1.0.0`;
-- #4 adds `web/tokens.css` and `web/tokens.json`, also labeled canonical `1.0.0`;
+- OpenCoven/brand#4 adds `web/tokens.css` and `web/tokens.json`, also labeled canonical `1.0.0`;
 - it uses a different schema and token prefix (`--oc-web-*`);
 - it changes typography from the ratified profile;
 - it changes action/presence values;
@@ -699,7 +699,7 @@ Rebase/recreate on current `main`; preserve visual-review functionality and rece
 
 ### `OpenCoven/ui#3`
 
-After #2 is clean, either restack or split. The developer-surface work is strategically aligned because it remains presentation-only, but 90+ stacked commits are too broad for a stable release boundary.
+After OpenCoven/ui#2 is clean, either restack or split. The developer-surface work is strategically aligned because it remains presentation-only, but 90+ stacked commits are too broad for a stable release boundary.
 
 ### `OpenCoven/ui#6`
 
