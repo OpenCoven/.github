@@ -22,6 +22,11 @@ JOB_LEVEL_REUSABLE_USE = re.compile(
     r")$"
 )
 ACTION_USE = re.compile(r"^\s*-?\s*uses:\s*([^\s#]+)", re.MULTILINE)
+DOCKER_DIGEST_USE = re.compile(r"^docker://[^@\s]+@sha256:[0-9a-fA-F]{64}$")
+FLOW_STYLE_ACTION_USE = re.compile(
+    r"^(?:\s*steps\s*:\s*\[[^\n]*|\s*-?\s*\{)[^}\n]*\buses\s*:",
+    re.MULTILINE,
+)
 CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]")
 REUSABLE_WORKFLOWS = {
     "reusable-agent-readiness.yml",
@@ -58,6 +63,78 @@ def load_json(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_no_duplicate_keys)
     except (OSError, json.JSONDecodeError, DuplicateKeyError) as exc:
         raise ValueError(f"{path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}: {exc}") from exc
+
+
+def validate_json_schema(instance: Any, schema: dict[str, Any], *, label: str) -> list[str]:
+    errors: list[str] = []
+
+    def visit(value: Any, rule: dict[str, Any], path: str) -> None:
+        expected_type = rule.get("type")
+        if expected_type:
+            matches = {
+                "object": isinstance(value, dict),
+                "array": isinstance(value, list),
+                "string": isinstance(value, str),
+                "boolean": isinstance(value, bool),
+                "integer": isinstance(value, int) and not isinstance(value, bool),
+                "number": isinstance(value, (int, float)) and not isinstance(value, bool),
+                "null": value is None,
+            }.get(expected_type)
+            if matches is None:
+                errors.append(f"{path}: schema uses unsupported type {expected_type!r}")
+                return
+            if not matches:
+                errors.append(f"{path}: schema expected {expected_type}, got {type(value).__name__}")
+                return
+
+        if "const" in rule and value != rule["const"]:
+            errors.append(f"{path}: schema expected constant {rule['const']!r}, got {value!r}")
+        if "enum" in rule and value not in rule["enum"]:
+            errors.append(f"{path}: schema value {value!r} is not in {rule['enum']!r}")
+
+        if isinstance(value, str):
+            if len(value) < rule.get("minLength", 0):
+                errors.append(f"{path}: schema string is shorter than minLength {rule['minLength']}")
+            pattern = rule.get("pattern")
+            if pattern is not None and re.search(pattern, value) is None:
+                errors.append(f"{path}: schema string does not match pattern {pattern!r}")
+            if rule.get("format") == "date":
+                try:
+                    date.fromisoformat(value)
+                except ValueError:
+                    errors.append(f"{path}: schema expected ISO date, got {value!r}")
+
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and "minimum" in rule:
+            if value < rule["minimum"]:
+                errors.append(f"{path}: schema value is below minimum {rule['minimum']}")
+
+        if isinstance(value, list):
+            if len(value) < rule.get("minItems", 0):
+                errors.append(f"{path}: schema array has fewer than {rule['minItems']} items")
+            if rule.get("uniqueItems"):
+                encoded = [json.dumps(item, sort_keys=True, separators=(",", ":")) for item in value]
+                if len(encoded) != len(set(encoded)):
+                    errors.append(f"{path}: schema array items must be unique")
+            item_rule = rule.get("items")
+            if isinstance(item_rule, dict):
+                for index, item in enumerate(value):
+                    visit(item, item_rule, f"{path}[{index}]")
+
+        if isinstance(value, dict):
+            properties = rule.get("properties", {})
+            for required in rule.get("required", []):
+                if required not in value:
+                    errors.append(f"{path}.{required}: schema required property is missing")
+            if rule.get("additionalProperties") is False:
+                for key in value:
+                    if key not in properties:
+                        errors.append(f"{path}.{key}: schema additional property is not allowed")
+            for key, child_rule in properties.items():
+                if key in value and isinstance(child_rule, dict):
+                    visit(value[key], child_rule, f"{path}.{key}")
+
+    visit(instance, schema, label)
+    return errors
 
 
 def _prefix_parts(prefix: str) -> tuple[str, ...]:
@@ -342,6 +419,8 @@ def _workflow_declares_workflow_call(lines: list[str]) -> bool:
             if kind == "mapping" and event_value is not None and event_value.startswith(("!", ">", "|")):
                 raise ValueError("caller workflow on: unsupported event value scalar syntax")
             events.append(_event_name(_clean_scalar(event), label="caller workflow on"))
+    if "pull_request_target" in events:
+        raise ValueError("caller workflow pull_request_target is forbidden")
     return "workflow_call" in events
 
 
@@ -614,6 +693,9 @@ def validate_reusable_invocation(
         except ValueError as exc:
             errors.append(str(exc))
             with_inputs = {}
+    allowed_inputs = {"policy_ref", path_input_name}
+    for input_name in sorted(set(with_inputs) - allowed_inputs):
+        errors.append(f"caller job {job_id}: unsupported with input {input_name}")
     literal_policy_ref = with_inputs.get("policy_ref")
     if literal_policy_ref is None:
         errors.append(f"caller job {job_id}: with.policy_ref is required")

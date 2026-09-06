@@ -12,11 +12,6 @@ on:
         required: false
         default: agent/manifest.json
         type: string
-      run_repository_check:
-        description: Run the target repository's scripts/agent-check fast after manifest validation
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   contents: read
@@ -266,6 +261,8 @@ jobs:
                       if kind == "mapping" and event_value is not None and event_value.startswith(("!", ">", "|")):
                           raise SystemExit("caller workflow on: unsupported event value scalar syntax")
                       events.append(event_name(clean_scalar(event), "caller workflow on"))
+              if "pull_request_target" in events:
+                  raise SystemExit("caller workflow pull_request_target is forbidden")
               return "workflow_call" in events
 
           def contains_yaml_anchor_or_alias(text):
@@ -485,6 +482,10 @@ jobs:
           if with_value is not None:
               raise SystemExit(f"caller job {job_id}: inline with mappings are unsupported")
           with_inputs = mapping_values(with_block, f"caller job {job_id}: with")
+          path_input_name = os.environ["PATH_INPUT_NAME"]
+          unsupported_inputs = sorted(set(with_inputs) - {"policy_ref", path_input_name})
+          if unsupported_inputs:
+              raise SystemExit(f"caller job {job_id}: unsupported with input {unsupported_inputs[0]}")
           literal_policy_ref = with_inputs.get("policy_ref")
           if literal_policy_ref is None:
               raise SystemExit(f"caller job {job_id}: with.policy_ref is required")
@@ -492,7 +493,6 @@ jobs:
               raise SystemExit(f"caller job {job_id}: expressions are unsupported in with.policy_ref")
           if literal_policy_ref != policy_ref or literal_policy_ref != uses_ref:
               raise SystemExit(f"caller job {job_id}: with.policy_ref must match runtime policy_ref and reusable workflow uses ref")
-          path_input_name = os.environ["PATH_INPUT_NAME"]
           literal_path = with_inputs.get(path_input_name) or os.environ.get("DEFAULT_RUNTIME_PATH") or None
           if literal_path is None:
               raise SystemExit(f"caller job {job_id}: with.{path_input_name} is required")
@@ -539,6 +539,5 @@ jobs:
             --caller-repository "$CALLER_REPOSITORY" \
             "$MANIFEST_PATH"
       - name: Run repository-native fast check
-        if: ${{ inputs.run_repository_check }}
         working-directory: target
         run: ./scripts/agent-check fast

@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Any
 
 from governance_core import (
-    ACTION_USE, ROOT, SECRET_PATTERNS, SHA40, TEXT_SUFFIXES,
+    ACTION_USE, DOCKER_DIGEST_USE, FLOW_STYLE_ACTION_USE, ROOT, SECRET_PATTERNS, SHA40, TEXT_SUFFIXES,
     expanded_repositories, load_json, markdown, sha256_text,
     resolve_trusted_target_file,
     validate_exception_data, validate_initiative_data,
-    validate_manifest_data, validate_registry_data,
+    validate_json_schema, validate_manifest_data, validate_registry_data,
 )
 
 @dataclass
@@ -47,15 +47,36 @@ class Governance:
             if not self.path(rel).exists():
                 errors.append(f"missing required path: {rel}")
 
+        parsed_json: dict[Path, Any] = {}
         # Parse every JSON file and reject duplicate keys.
         for path in sorted(self.root.rglob("*.json")):
+            if ".git" in path.relative_to(self.root).parts:
+                continue
             try:
-                load_json(path)
+                parsed_json[path] = load_json(path)
             except ValueError as exc:
                 errors.append(str(exc))
 
         if errors:
             return errors
+
+        for path, data in parsed_json.items():
+            if "schemas" in path.relative_to(self.root).parts or not isinstance(data, dict):
+                continue
+            schema_ref = data.get("$schema")
+            if not isinstance(schema_ref, str):
+                errors.append(f"{path.relative_to(self.root)}: schema reference is required")
+                continue
+            schema_path = (path.parent / schema_ref).resolve()
+            if not schema_path.is_relative_to(self.root.resolve()) or schema_path.parent != self.path("schemas").resolve():
+                errors.append(f"{path.relative_to(self.root)}: schema reference must resolve inside schemas/")
+                continue
+            try:
+                schema = load_json(schema_path)
+            except ValueError as exc:
+                errors.append(str(exc))
+                continue
+            errors.extend(validate_json_schema(data, schema, label=str(path.relative_to(self.root))))
 
         registry = self.registry()
         errors.extend(validate_registry_data(registry))
@@ -180,8 +201,14 @@ class Governance:
                 errors.append(f"{rel}: top-level permissions block required")
             if "pull_request_target:" in text:
                 errors.append(f"{rel}: pull_request_target is forbidden")
+            if FLOW_STYLE_ACTION_USE.search(text):
+                errors.append(f"{rel}: flow-style action mappings are unsupported")
             for action in ACTION_USE.findall(text):
-                if action.startswith("./") or action.startswith("docker://"):
+                if action.startswith("./"):
+                    continue
+                if action.startswith("docker://"):
+                    if not DOCKER_DIGEST_USE.fullmatch(action):
+                        errors.append(f"{rel}: Docker action must use an immutable digest: {action}")
                     continue
                 if "@" not in action:
                     errors.append(f"{rel}: action without immutable ref: {action}")
@@ -197,8 +224,18 @@ class Governance:
                 or re.search(r"(?m)^on:\s*{[^{}\n]*,\s*pull_request\s*:", text)
             ):
                 permission_section = self._top_level_block(text, "permissions")
-                if re.search(r"(?m)^\s+[A-Za-z-]+:\s*write\s*$", permission_section):
+                if self._permissions_request_write(permission_section):
                     errors.append(f"{rel}: pull_request workflow may not request write permission")
+                for match in re.finditer(
+                    r"(?m)^(?P<indent> +)permissions:\s*(?P<value>[^#\n]*?)(?:\s+#.*)?$",
+                    text,
+                ):
+                    permission_value = match.group("value").strip()
+                    permission_section = self._indented_block(text, match.end(), len(match.group("indent")))
+                    if self._permissions_request_write(permission_value) or self._permissions_request_write(
+                        permission_section
+                    ):
+                        errors.append(f"{rel}: pull_request workflow may not request job-level write permission")
         return errors
 
     @staticmethod
@@ -215,6 +252,23 @@ class Governance:
                     break
                 result.append(line)
         return "\n".join(result)
+
+    @staticmethod
+    def _indented_block(text: str, start: int, indent: int) -> str:
+        result: list[str] = []
+        for line in text[start:].splitlines():
+            if line.strip() and len(line) - len(line.lstrip()) <= indent:
+                break
+            result.append(line)
+        return "\n".join(result)
+
+    @staticmethod
+    def _permissions_request_write(text: str) -> bool:
+        if re.search(r"(?m)^\s*[A-Za-z-]+:\s*['\"]?write['\"]?\s*(?:#.*)?$", text):
+            return True
+        if re.search(r"(?:^|[{,])\s*[A-Za-z-]+\s*:\s*['\"]?write['\"]?\s*(?:[,}]|$)", text):
+            return True
+        return text.strip() == "write-all"
 
     def scan_secrets(self) -> list[str]:
         errors: list[str] = []
@@ -257,9 +311,15 @@ class Governance:
         ]
         for state in ("active", "incubating", "maintenance", "deprecated", "archived", "tombstone"):
             portfolio.append(f"| {state} | {counts[state]} |")
-        portfolio += ["", "## Repositories", "", "| Repository | Lifecycle | Canonicality | Risk | Owner | Disposition | Manifest |", "|---|---|---|---:|---|---|---|"]
+        portfolio += [
+            "",
+            "## Repositories",
+            "",
+            "| Repository | Lifecycle | Canonicality | Risk | Owner | Disposition | Manifest | Observation |",
+            "|---|---|---|---:|---|---|---|---|",
+        ]
         for item in registry:
-            portfolio.append("| {name} | {lifecycle} | {canonicality} | {risk_class} | @{owner} | {state} | {manifest} |".format(
+            portfolio.append("| {name} | {lifecycle} | {canonicality} | {risk_class} | @{owner} | {state} | {manifest} | {observation_status} |".format(
                 **item,
                 state=markdown(item["disposition"]["state"]),
                 manifest=item["agent_manifest"]["status"],

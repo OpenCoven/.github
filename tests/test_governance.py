@@ -7,6 +7,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -63,6 +64,14 @@ class RegistryInvariantTests(unittest.TestCase):
         data["repositories"][0]["disposition"] = {"state": "retain", "review_by": "2026-09-02"}
         errors = GOV.validate_registry_data(data, today=date(2026, 9, 3))
         self.assertTrue(any("review expired" in error for error in errors), errors)
+
+    def test_unavailable_public_record_is_explicitly_unresolved(self) -> None:
+        target = next(
+            item
+            for item in self.registry["repositories"]
+            if item["name"] == "opencoven-beta-august-hackathon-2026"
+        )
+        self.assertEqual("unavailable-needs-owner-evidence", target.get("observation_status"))
 
 
 class OwnershipBoundaryTests(unittest.TestCase):
@@ -234,6 +243,78 @@ class WorkflowInvariantTests(unittest.TestCase):
                 "name: test\non: push\npermissions:\n  contents: read\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1\n"
             )
             self.assertEqual([], GOV.Governance(root).validate_workflows())
+
+    def test_mutable_docker_action_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            workflow = root / ".github/workflows/test.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "name: test\non: push\npermissions:\n  contents: read\njobs:\n  test:\n"
+                "    runs-on: ubuntu-latest\n    steps:\n"
+                "      - uses: docker://attacker/image:latest\n"
+            )
+            errors = GOV.Governance(root).validate_workflows()
+            self.assertTrue(any("Docker action must use an immutable digest" in error for error in errors), errors)
+
+    def test_flow_style_action_use_is_rejected_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            workflow = root / ".github/workflows/test.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "name: test\non: push\npermissions:\n  contents: read\njobs:\n  test:\n"
+                "    runs-on: ubuntu-latest\n    steps:\n"
+                "      - { uses: attacker/action@main }\n"
+            )
+            errors = GOV.Governance(root).validate_workflows()
+            self.assertTrue(any("flow-style action mappings are unsupported" in error for error in errors), errors)
+
+    def test_flow_sequence_action_use_is_rejected_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            workflow = root / ".github/workflows/test.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "name: test\non: push\npermissions:\n  contents: read\njobs:\n  test:\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps: [{ uses: attacker/action@main }]\n"
+            )
+            errors = GOV.Governance(root).validate_workflows()
+            self.assertTrue(any("flow-style action mappings are unsupported" in error for error in errors), errors)
+
+    def test_pull_request_job_level_write_permission_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            workflow = root / ".github/workflows/test.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "name: test\non: pull_request\npermissions:\n  contents: read\njobs:\n  mutate:\n"
+                "    permissions:\n      contents: write\n      id-token: write\n"
+                "    runs-on: ubuntu-latest\n    steps:\n"
+                "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1\n"
+            )
+            errors = GOV.Governance(root).validate_workflows()
+            self.assertTrue(any("job-level write permission" in error for error in errors), errors)
+
+    def test_pull_request_job_level_permission_variants_are_rejected(self) -> None:
+        variants = (
+            "    permissions: { contents: write }\n",
+            "    permissions:  # job grant\n      contents: write\n",
+        )
+        for permissions in variants:
+            with self.subTest(permissions=permissions), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                workflow = root / ".github/workflows/test.yml"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_text(
+                    "name: test\non: pull_request\npermissions:\n  contents: read\njobs:\n  mutate:\n"
+                    f"{permissions}"
+                    "    runs-on: ubuntu-latest\n    steps:\n"
+                    "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1\n"
+                )
+                errors = GOV.Governance(root).validate_workflows()
+                self.assertTrue(any("job-level write permission" in error for error in errors), errors)
 
     def test_pull_request_inline_mapping_is_treated_as_pr_trigger(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -500,6 +581,9 @@ SUPPORTED_EVENT_ON_BLOCKS = {
 
 
 UNSUPPORTED_EVENT_ON_BLOCKS = {
+    "pull-request-target-scalar": "on: pull_request_target\n",
+    "pull-request-target-mapping": "on:\n  pull_request_target:\n",
+    "pull-request-target-flow-sequence": "on: [push, pull_request_target]\n",
     "quoted-top-level-on-key": '"on":\n  pull_request:\n',
     "folded-scalar-strip": "on: >-\n  workflow_call\n",
     "folded-scalar-keep": "on: >+\n  workflow_call\n",
@@ -728,6 +812,14 @@ class ReusableInvocationPolicyTests(unittest.TestCase):
 
     def test_positive_direct_caller_with_exact_sha_is_accepted(self) -> None:
         self.assertEqual([], self._errors())
+
+    def test_readiness_caller_cannot_disable_repository_check(self) -> None:
+        self.workflow.write_text(
+            _caller_workflow(extra_job="      run_repository_check: false\n"),
+            encoding="utf-8",
+        )
+        errors = self._errors()
+        self.assertTrue(any("run_repository_check" in error for error in errors), errors)
 
     def test_supported_literal_event_forms_are_accepted(self) -> None:
         cases = dict(SUPPORTED_EVENT_ON_BLOCKS)
@@ -1020,6 +1112,27 @@ class InlineReusablePreflightTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_inline_readiness_preflight_rejects_disabled_repository_check(self) -> None:
+        self.workflow.write_text(
+            _caller_workflow(extra_job="      run_repository_check: false\n"),
+            encoding="utf-8",
+        )
+        result = self._run_preflight(
+            workflow_name="reusable-agent-readiness.yml",
+            policy_ref=SHA_A,
+            reusable="reusable-agent-readiness.yml",
+            path_input_name="manifest_path",
+            runtime_path="agent/manifest.json",
+            default_runtime_path="agent/manifest.json",
+        )
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("run_repository_check", result.stderr)
+
+    def test_readiness_workflow_always_runs_repository_check(self) -> None:
+        text = (ROOT / ".github/workflows/reusable-agent-readiness.yml").read_text(encoding="utf-8")
+        self.assertNotIn("run_repository_check:", text)
+        self.assertNotIn("if: ${{ inputs.run_repository_check }}", text)
+
     def test_inline_preflight_rejects_nested_event_variants_for_both_reusables(self) -> None:
         nested_events = (
             'on:\n  "workflow_call":\n',
@@ -1194,6 +1307,99 @@ class GeneratedOutputTests(unittest.TestCase):
         second = governance.generated_content()
         self.assertEqual(first, second)
 
+    def test_portfolio_exposes_unresolved_observation_status(self) -> None:
+        portfolio = GOV.Governance(ROOT).generated_content()["generated/portfolio.md"]
+        self.assertIn("| Observation |", portfolio)
+        self.assertRegex(
+            portfolio,
+            r"(?m)^\| opencoven-beta-august-hackathon-2026 .*"
+            r"\| unavailable-needs-owner-evidence \|$",
+        )
+
+
+class PublishedSchemaTests(unittest.TestCase):
+    def _copy_repository(self, target: Path) -> None:
+        shutil.copytree(
+            ROOT,
+            target,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+        )
+
+    def test_contract_index_missing_schema_fields_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._copy_repository(root)
+            path = root / "compatibility/contracts.json"
+            data = json.loads(path.read_text(encoding="utf-8"))
+            data.pop("schema_version")
+            data.pop("claim_rule")
+            data["contracts"][0].pop("status")
+            data["contracts"][0].pop("immutable_release_required")
+            _write_json(path, data)
+
+            errors = GOV.Governance(root).validate()
+
+            for field in ("schema_version", "claim_rule", "status", "immutable_release_required"):
+                self.assertTrue(any("schema" in error and field in error for error in errors), (field, errors))
+
+    def test_repository_internal_json_is_outside_governance_schema_scope(self) -> None:
+        errors = GOV.Governance(ROOT).validate()
+        self.assertFalse(any(".git/" in error and "schema reference" in error for error in errors), errors)
+
+    def test_initiative_schema_enums_are_enforced(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._copy_repository(root)
+            path = root / "initiatives/organization-governance-plane-v1.json"
+            data = json.loads(path.read_text(encoding="utf-8"))
+            data["status"] = "almost-done"
+            data["priority"] = "urgent"
+            data["ownership_status"] = "someone-probably-owns-it"
+            _write_json(path, data)
+
+            errors = GOV.Governance(root).validate()
+
+            for field in ("status", "priority", "ownership_status"):
+                self.assertTrue(any("schema" in error and field in error for error in errors), (field, errors))
+
+
+class GovernancePolicyConsistencyTests(unittest.TestCase):
+    def test_public_documents_do_not_name_private_design_inventory(self) -> None:
+        private_name = "coven-" + "design"
+        prohibited = (
+            f"private `OpenCoven/{private_name}`",
+            f"[`OpenCoven/{private_name}`](https://github.com/OpenCoven/{private_name})",
+            f"private {private_name}",
+        )
+        matches: list[str] = []
+        for path in sorted((ROOT / "docs").glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            for value in prohibited:
+                if value in text:
+                    matches.append(f"{path.relative_to(ROOT)}: {value}")
+        self.assertEqual([], matches)
+
+    def test_rollout_protects_main_before_ratifying_merge(self) -> None:
+        text = (ROOT / "docs/rollout.md").read_text(encoding="utf-8")
+        phrases = (
+            "Establish an eligible independent reviewer",
+            "Apply and evidence the `.github/main` ruleset",
+            "Review and merge the governance-plane PR",
+        )
+        for phrase in phrases:
+            self.assertIn(phrase, text)
+        reviewer, protection, merge = (text.index(phrase) for phrase in phrases)
+        self.assertLess(reviewer, protection)
+        self.assertLess(protection, merge)
+
+    def test_evidence_packet_does_not_claim_pre_pr_state(self) -> None:
+        text = (ROOT / "evidence/2026-09-03-organization-governance-plane-v1.json").read_text(encoding="utf-8")
+        self.assertNotIn("13 unit tests", text)
+        self.assertNotIn("Pending creation of the review branch and pull request", text)
+        self.assertIn("97 tests", text)
+        self.assertIn("535177155710425b8f9e5ad546245c77ace35c20", text)
+
 
 class PublicDriftTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -1211,7 +1417,21 @@ class PublicDriftTests(unittest.TestCase):
         ]
 
     def test_matching_public_inventory_has_no_drift(self) -> None:
-        self.assertEqual([], GOV.reconcile_public_inventory(self.governance, self.live))
+        declared = self.governance.registry_map()
+        declared["opencoven-beta-august-hackathon-2026"]["observation_status"] = "verified-public"
+        with patch.object(self.governance, "registry_map", return_value=declared):
+            self.assertEqual([], GOV.reconcile_public_inventory(self.governance, self.live))
+
+    def test_visible_repository_marked_unavailable_is_reported(self) -> None:
+        errors = GOV.reconcile_public_inventory(self.governance, self.live)
+        self.assertTrue(
+            any(
+                "`opencoven-beta-august-hackathon-2026` observation status mismatch" in error
+                and "live=verified-public" in error
+                for error in errors
+            ),
+            errors,
+        )
 
     def test_unregistered_public_repository_is_reported(self) -> None:
         live = self.live + [{
@@ -1223,6 +1443,25 @@ class PublicDriftTests(unittest.TestCase):
         }]
         errors = GOV.reconcile_public_inventory(self.governance, live)
         self.assertTrue(any("unregistered public repository" in error for error in errors), errors)
+
+
+class GitHubRequestTests(unittest.TestCase):
+    def test_authenticated_request_uses_bearer_token(self) -> None:
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self) -> bytes:
+                return b"{}"
+
+        with patch.object(governance_cli.urllib.request, "urlopen", return_value=Response()) as urlopen:
+            governance_cli.github_request("https://api.github.com/user", token="test-token")
+
+        request = urlopen.call_args.args[0]
+        self.assertEqual("Bearer test-token", request.get_header("Authorization"))
 
 
 def _raw_node(number: int, *, title: str = GOV.MANAGED_ISSUE_TITLE, marker: str | None = GOV.MANAGED_ISSUE_MARKER,

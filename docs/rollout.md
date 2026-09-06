@@ -16,12 +16,18 @@ Exit: clean local fast gate and green PR CI.
 
 ## Days 0–30
 
-1. Review and merge the governance-plane PR.
-2. Apply and evidence the `.github/main` ruleset and organization/Actions baseline from issue #6.
-3. Pilot repository-local `agent/manifest.json` and the reusable readiness workflow in at least two canonical repositories at an immutable `.github` commit.
-4. Reconcile the live public inventory and correct default-branch/archive/manifest drift.
-5. Convert current portfolio recommendations into scoped repository-local migration issues.
-6. Add backup reviewers for the highest-risk R4 repositories or explicitly track the bus-factor exception.
+1. Establish an eligible independent reviewer and backup CODEOWNER through the
+   separately authorized issue #6 administration path.
+2. Apply and evidence the `.github/main` ruleset and organization/Actions
+   baseline from issue #6 without a routine administrator bypass.
+3. Prove that direct pushes are rejected and that the governance-plane PR can
+   satisfy the required review, CODEOWNER, conversation-resolution, and
+   `Governance CI / validate` gates.
+4. Review and merge the governance-plane PR through that protected path.
+5. Pilot repository-local `agent/manifest.json` and the reusable readiness workflow in at least two canonical repositories at an immutable `.github` commit.
+6. Reconcile the live public inventory and correct default-branch/archive/manifest drift.
+7. Convert current portfolio recommendations into scoped repository-local migration issues.
+8. Add backup reviewers for the highest-risk R4 repositories or explicitly track the bus-factor exception.
 
 Exit:
 

@@ -44,12 +44,12 @@
     {
       "kind": "repository",
       "reference": "OpenCoven/.github",
-      "revision": "c8b4ad3f9f9794db0fa79f338c2ce688ce6d4106"
+      "revision": "535177155710425b8f9e5ad546245c77ace35c20"
     },
     {
       "kind": "github-public-inventory",
       "reference": "OpenCoven public repositories",
-      "revision": "observed-2026-09-03:30-public-repositories"
+      "revision": "observed-2026-09-05:30-visible-plus-1-unresolved-lifecycle-record"
     }
   ],
   "files": [
@@ -72,8 +72,8 @@
     {
       "command": "./scripts/agent-check fast",
       "result": "pass",
-      "environment": "Linux; Python 3.13.5; dependency-free deterministic path",
-      "evidence": "Governance validation, generated-view check, and 13 unit tests passed."
+      "environment": "macOS; Python 3.14.6; dependency-free deterministic path",
+      "evidence": "Governance validation, generated-view check, and 97 tests passed on the local remediation candidate derived from PR head 535177155710425b8f9e5ad546245c77ace35c20."
     },
     {
       "command": "bash -n scripts/agent-bootstrap scripts/agent-check",
@@ -95,9 +95,9 @@
     },
     {
       "command": "GitHub Actions pull-request execution",
-      "result": "skipped",
+      "result": "pass",
       "environment": "GitHub-hosted runner",
-      "evidence": "Pending creation of the review branch and pull request."
+      "evidence": "Governance CI run 34015758673 and validate job 101439107465 passed on PR head 535177155710425b8f9e5ad546245c77ace35c20."
     },
     {
       "command": "Organization ruleset and permission effectiveness test",
@@ -109,9 +109,9 @@
   "migration": "Additive and reversible. Existing policy, provenance, patent, profile, and audit files remain untouched. Public portfolio records begin as reviewed coordination metadata; repository-local implementation remains authoritative.",
   "rollback": "Close the pull request and delete the feature branch before merge. After merge, revert the governance-plane commit while preserving issues and settings evidence; no repository lifecycle or visibility mutations are coupled to this change.",
   "uncertainty": [
-    "Remote GitHub Actions behavior is pending pull-request execution.",
+    "Exact remediation-candidate GitHub Actions behavior remains pending publication; run 34015758673 passed on the prior PR head 535177155710425b8f9e5ad546245c77ace35c20.",
     "Organization rulesets, Actions policy, app scopes, environments, MFA, and break-glass controls are not applied by repository content and remain open in issue #6.",
-    "The public registry reflects the connected GitHub inventory observed on 2026-09-03 and requires scheduled reconciliation after merge.",
+    "The public inventory observed on 2026-09-05 exposed 30 repositories while the registry retains 31 records. The unavailable opencoven-beta-august-hackathon-2026 record remains unresolved pending owner or administrator evidence; public absence does not prove deletion, transfer, rename, or visibility change.",
     "Private repository aggregation is intentionally omitted from this public repository and requires an access-controlled federated overlay."
   ]
 }

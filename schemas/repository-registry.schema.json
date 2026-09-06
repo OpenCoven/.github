@@ -54,6 +54,7 @@
       "required": [
         "visibility",
         "observed",
+        "observation_status",
         "owner",
         "technical_dri",
         "ownership_status",
@@ -79,6 +80,12 @@
             }
           },
           "additionalProperties": false
+        },
+        "observation_status": {
+          "enum": [
+            "verified-public",
+            "unavailable-needs-owner-evidence"
+          ]
         },
         "owner": {
           "type": "string",
@@ -222,6 +229,12 @@
               }
             },
             "additionalProperties": false
+          },
+          "observation_status": {
+            "enum": [
+              "verified-public",
+              "unavailable-needs-owner-evidence"
+            ]
           },
           "owner": {
             "type": "string",
