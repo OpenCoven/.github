@@ -65,6 +65,11 @@ def reconcile_public_inventory(governance: Governance, live: list[dict[str, Any]
     for name in sorted(set(declared) & set(actual), key=str.lower):
         expected = declared[name]["observed"]
         observed = actual[name]
+        if declared[name]["observation_status"] != "verified-public":
+            drift.append(
+                f"`{name}` observation status mismatch: "
+                f"registry={declared[name]['observation_status']} live=verified-public"
+            )
         if bool(observed.get("archived")) != expected.get("archived"):
             drift.append(f"`{name}` archived mismatch: registry={expected.get('archived')} live={bool(observed.get('archived'))}")
         if observed.get("default_branch") != expected.get("default_branch"):
