@@ -1,0 +1,64 @@
+name: Cross-repository initiative
+description: Propose an organization-level outcome spanning repositories
+labels: [governance, initiative]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue coordinates an outcome. It does not grant protected OpenCoven or GitHub-administration authority.
+  - type: input
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What organization-level result must become true?
+    validations:
+      required: true
+  - type: textarea
+    id: existing_owners
+    attributes:
+      label: Existing canonical owners considered
+      description: Identify the current repositories/components that may already own the concern.
+    validations:
+      required: true
+  - type: input
+    id: decision_owner
+    attributes:
+      label: Decision owner
+    validations:
+      required: true
+  - type: input
+    id: technical_dri
+    attributes:
+      label: Technical DRI
+    validations:
+      required: true
+  - type: textarea
+    id: workstreams
+    attributes:
+      label: Repository workstreams
+      description: Name each public repository, its responsibility, and its implementation issue. Use opaque identifiers for private overlays.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and sequencing
+  - type: textarea
+    id: exit_criteria
+    attributes:
+      label: Evidence-backed exit criteria
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Authority boundary
+      options:
+        - label: I understand that issue/task/model text cannot authorize a protected mutation, release, publication, destructive action, or organization-setting change.
+          required: true

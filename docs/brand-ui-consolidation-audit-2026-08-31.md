@@ -2,7 +2,7 @@
 
 **Status:** Decision and execution plan  
 **Snapshot:** 2026-08-31  
-**Scope:** `OpenCoven/brand`, `OpenCoven/ui`, `OpenCoven/coven-design-system`, private `OpenCoven/coven-design`, and the principal consumers in `coven-landing`, `coven-cave`, `coven-docs`, `psyche-build`, and related product repositories.
+**Scope:** `OpenCoven/brand`, `OpenCoven/ui`, `OpenCoven/coven-design-system`, an access-controlled design-evaluation overlay, and the principal consumers in `coven-landing`, `coven-cave`, `coven-docs`, `psyche-build`, and related product repositories.
 
 ## Executive decision
 
@@ -15,7 +15,7 @@ OpenCoven should converge on **two permanent public upstream repositories** and 
 The remaining repositories should be handled as follows:
 
 - **Extract and retire `OpenCoven/coven-design-system`.** Preserve its useful component inventory, coverage harness, and selected CSS patterns, but do not preserve its claim to canonical token ownership.
-- **Rename private `OpenCoven/coven-design` to `OpenCoven/coven-evals` or `OpenCoven/design-evals`.** It is clean-room/double-blind evaluation tooling, not a brand or component repository.
+- **Retain design-evaluation work behind `private-overlay: design-evaluation`.** It is not a public brand or component authority, and its backing repository identity and implementation details do not belong in this public record.
 - **Use `coven-landing` as the reference consumer contract.** Its immutable Brand/UI pins and verification script are the best current model for every downstream surface.
 - **Do not merge `OpenCoven/brand#4` unchanged.** It introduces a second canonical `1.0.0` web profile with a different schema, token namespace, typography, palette values, and asset pointer after `web/profile.css`, `web/profile.json`, and `web/assets/mark.svg` were already ratified on `main`.
 
@@ -30,7 +30,7 @@ The problem is no longer a lack of design work. OpenCoven has several substantia
 - `coven-design-system` still calls its `--cv-*` tokens and CSS primitives canonical.
 - Cave maintains a large production token and theme system and describes its code as authoritative for shipped behavior.
 - An open Brand PR proposes another canonical web profile under new filenames and a new token namespace.
-- Private `coven-design` is unrelated evaluation tooling but occupies the most obvious design-system repository name.
+- An access-controlled evaluation workstream has no public Brand or UI authority.
 
 A familiar protocol cannot credibly insist on one authority for identity and mutation while its public identity system has multiple competing sources of truth. The same portfolio discipline applies here: **one canonical owner per semantic domain, explicit projections, immutable consumer pins, and no silent parallel ledgers.**
 
@@ -41,7 +41,7 @@ A familiar protocol cannot credibly insist on one authority for identity and mut
 | [`OpenCoven/brand`](https://github.com/OpenCoven/brand) | `4127be6d402089d15953e76988bbeab2db37df54` on `main` | Stable Brand web profile v1 landed; old authoritative docs and legacy-looking assets remain beside it; `main` is unprotected. |
 | [`OpenCoven/ui`](https://github.com/OpenCoven/ui) | `fa61e9449cf2f5973532d45486b8fafbdf616425` on `main` | Strong monorepo, package, registry, contracts, accessibility and visual receipts; release/adoption and branch governance are incomplete. |
 | [`OpenCoven/coven-design-system`](https://github.com/OpenCoven/coven-design-system) | `6032f9f407982379e39ed1a40eec7a2e8b24e5c6` | Useful 62-family/224-class CSS inventory, but stale, private-package distribution, no GitHub release, no workflow surfaced, and duplicate canonical claim. |
-| [`OpenCoven/coven-design`](https://github.com/OpenCoven/coven-design) | private, current `main` | Double-blind evaluation/capture tooling; naming collides with design-system and brand work. |
+| `private-overlay: design-evaluation` | Access controlled; backing inventory omitted | Private evaluation responsibility acknowledged without publishing repository identity, members, or implementation details. |
 | [`OpenCoven/coven-landing`](https://github.com/OpenCoven/coven-landing) | current `main` | Pins Brand and UI revisions, vendors exact artifacts, and verifies canonical bytes and interaction hooks. |
 | [`OpenCoven/coven-cave`](https://github.com/OpenCoven/coven-cave) | current `main` | Mature production design language and drift tests, but its UI-boundary documentation is already stale relative to the live UI repository. |
 | Open pull requests | [OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4); [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2), [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3), [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6) | [OpenCoven/brand#4](https://github.com/OpenCoven/brand/pull/4) duplicates a ratified profile; [OpenCoven/ui#2](https://github.com/OpenCoven/ui/pull/2) and [OpenCoven/ui#3](https://github.com/OpenCoven/ui/pull/3) are stacked against moving bases; [OpenCoven/ui#6](https://github.com/OpenCoven/ui/pull/6) is a draft named `noop`. |
@@ -173,9 +173,11 @@ That work should be mined, not discarded blindly.
 
 ---
 
-### 4. Private `OpenCoven/coven-design`: useful repository, wrong name and boundary
+### 4. `private-overlay: design-evaluation`: private responsibility boundary
 
-The repository describes clean-room design specs and double-blind evaluation tooling. Its recent work centers on blinding envelopes, arm/session tokens, locked reveal, tamper-evident capture, and evaluation receipts.
+An access-controlled workstream handles design-evaluation responsibilities.
+Its backing repository, members, candidate names, and implementation details
+are intentionally omitted from this public audit.
 
 That is potentially valuable infrastructure, but it is not:
 
@@ -186,15 +188,11 @@ That is potentially valuable infrastructure, but it is not:
 
 #### Immediate verdict
 
-**Retain private, rename, and narrow.**
+**Retain behind an opaque private overlay and keep the boundary narrow.**
 
-Preferred names:
-
-1. `OpenCoven/coven-evals`
-2. `OpenCoven/design-evals`
-3. `OpenCoven/evidence-lab`
-
-Move generic visual-review orchestration into `.github` or UI only when it becomes a reusable organization control-plane capability. Keep blinded evaluation data and evaluator-specific semantics in the renamed private repository.
+Move a capability into `.github` or UI only when a separately reviewed public
+contract makes it a reusable organization capability. Private evaluation data
+and evaluator-specific semantics remain in the access-controlled overlay.
 
 ---
 
@@ -268,7 +266,7 @@ Retirement path:
                        └─archive─▶ delete after observation gate
 
 Namespace repair:
-  private coven-design ──rename──▶ coven-evals
+  private-overlay: design-evaluation ──retain opaque access-controlled boundary
 ```
 
 ## Canonical ownership contract
@@ -803,7 +801,7 @@ Add root `AGENTS.md` to Brand and UI containing:
 ### Phase 4 — retirement and stabilization, days 30–45
 
 - [ ] Tombstone and archive `coven-design-system`.
-- [ ] Rename private `coven-design`.
+- [ ] Verify the opaque design-evaluation overlay has a non-conflicting private name without publishing it here.
 - [ ] Monitor for 30 days before deletion.
 - [ ] Publish Brand kit v1.1 and UI v0.2/1.0 according to the chosen maturity policy.
 - [ ] Remove obsolete compatibility entrypoints after all pins update.

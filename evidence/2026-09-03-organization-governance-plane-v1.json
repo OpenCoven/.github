@@ -1,0 +1,117 @@
+{
+  "$schema": "../schemas/evidence-packet.schema.json",
+  "schema_version": "opencoven.governance-evidence/v1",
+  "change": {
+    "objective": "Establish the initial public OpenCoven organization governance and portfolio coordination plane in OpenCoven/.github.",
+    "acceptance_criteria": [
+      "Current public repositories are inventoried with ownership, lifecycle, canonicality, risk, disposition, and manifest state.",
+      "Canonical public domains have unique owners.",
+      "Cross-repository initiatives, decisions, dependencies, controls, and exceptions are machine-readable and validated.",
+      "Generated portfolio views are deterministic and stale changes fail validation.",
+      "GitHub Actions use explicit least-privilege permissions and immutable third-party Action pins.",
+      "Administrative organization settings remain a separately evidenced gate."
+    ],
+    "non_goals": [
+      "Changing repository visibility, archive state, ownership, transfer, or deletion.",
+      "Merging, releasing, publishing, deploying, or applying GitHub organization settings.",
+      "Replacing repository-local implementation truth or OpenCoven protected authority systems.",
+      "Publishing private repository inventory or confidential operational context."
+    ]
+  },
+  "authority": {
+    "risk_class": "R4",
+    "protected_boundaries": [
+      "organization governance and repository administration",
+      "identity and principal binding",
+      "protected authorization",
+      "orchestration",
+      "runtime persistence and execution",
+      "release and publication"
+    ],
+    "authorization_effect": "none-metadata-only"
+  },
+  "sources": [
+    {
+      "kind": "project-research",
+      "reference": "OpenCoven Public Repository Agent-Readiness Audit",
+      "revision": "sha256:3fbb5f4712acd2d3589755e6e08415b41fb8c08170b528e6db6f9923f43b55c3"
+    },
+    {
+      "kind": "project-research",
+      "reference": "SPAR and Familiar Contract reconciliation",
+      "revision": "sha256:754b2ed36235c1ed51b8ecf522053d4e16cc4f7ffd9fa78ada5d565fa1f75cf0"
+    },
+    {
+      "kind": "repository",
+      "reference": "OpenCoven/.github",
+      "revision": "535177155710425b8f9e5ad546245c77ace35c20"
+    },
+    {
+      "kind": "github-public-inventory",
+      "reference": "OpenCoven public repositories",
+      "revision": "observed-2026-09-05:30-visible-plus-1-unresolved-lifecycle-record"
+    }
+  ],
+  "files": [
+    "README.md",
+    "AGENTS.md",
+    "agent/manifest.json",
+    "governance/**",
+    "initiatives/**",
+    "decisions/**",
+    "compatibility/**",
+    "policies/**",
+    "docs/**",
+    "schemas/**",
+    "scripts/**",
+    "tests/**",
+    "generated/**",
+    ".github/**"
+  ],
+  "verification": [
+    {
+      "command": "./scripts/agent-check fast",
+      "result": "pass",
+      "environment": "macOS; Python 3.14.6; dependency-free deterministic path",
+      "evidence": "Governance validation, generated-view check, and 97 tests passed on the local remediation candidate derived from PR head 535177155710425b8f9e5ad546245c77ace35c20."
+    },
+    {
+      "command": "bash -n scripts/agent-bootstrap scripts/agent-check",
+      "result": "pass",
+      "environment": "Linux bash",
+      "evidence": "Shell entrypoints parsed successfully."
+    },
+    {
+      "command": "python3 -m py_compile scripts/governance.py scripts/governance_core.py scripts/governance_model.py scripts/governance_cli.py tests/test_governance.py",
+      "result": "pass",
+      "environment": "Python 3.13.5",
+      "evidence": "CLI wrapper, modular validator/generator/reconciler, and test module compiled successfully."
+    },
+    {
+      "command": "PyYAML safe_load over .github/**/*.yml",
+      "result": "pass",
+      "environment": "Local validation environment",
+      "evidence": "Issue forms, Dependabot config, and four workflows parsed without YAML syntax errors."
+    },
+    {
+      "command": "GitHub Actions pull-request execution",
+      "result": "pass",
+      "environment": "GitHub-hosted runner",
+      "evidence": "Governance CI run 34015758673 and validate job 101439107465 passed on PR head 535177155710425b8f9e5ad546245c77ace35c20."
+    },
+    {
+      "command": "Organization ruleset and permission effectiveness test",
+      "result": "skipped",
+      "environment": "GitHub organization administration",
+      "evidence": "Explicitly tracked by OpenCoven/.github#6; current main was observed unprotected before this change."
+    }
+  ],
+  "migration": "Additive and reversible. Existing policy, provenance, patent, profile, and audit files remain untouched. Public portfolio records begin as reviewed coordination metadata; repository-local implementation remains authoritative.",
+  "rollback": "Close the pull request and delete the feature branch before merge. After merge, revert the governance-plane commit while preserving issues and settings evidence; no repository lifecycle or visibility mutations are coupled to this change.",
+  "uncertainty": [
+    "Exact remediation-candidate GitHub Actions behavior remains pending publication; run 34015758673 passed on the prior PR head 535177155710425b8f9e5ad546245c77ace35c20.",
+    "Organization rulesets, Actions policy, app scopes, environments, MFA, and break-glass controls are not applied by repository content and remain open in issue #6.",
+    "The public inventory observed on 2026-09-05 exposed 30 repositories while the registry retains 31 records. The unavailable opencoven-beta-august-hackathon-2026 record remains unresolved pending owner or administrator evidence; public absence does not prove deletion, transfer, rename, or visibility change.",
+    "Private repository aggregation is intentionally omitted from this public repository and requires an access-controlled federated overlay."
+  ]
+}

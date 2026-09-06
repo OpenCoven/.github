@@ -1,0 +1,64 @@
+{
+  "$schema": "../schemas/agent-manifest.schema.json",
+  "schema_version": "opencoven.agent-repo/v1",
+  "repository": {
+    "name": ".github",
+    "lifecycle": "active",
+    "canonicality": "canonical",
+    "canonical_for": [
+      "organization.governance",
+      "organization.portfolio",
+      "organization.shared-policy"
+    ],
+    "does_not_own": [
+      "familiar.identity",
+      "protected.authorization",
+      "project-orchestration",
+      "runtime.persistence",
+      "runtime.execution",
+      "release.approval",
+      "publication.approval",
+      "automation.lifecycle"
+    ],
+    "owner": "BunsDev",
+    "technical_dri": "BunsDev",
+    "ownership_status": "bootstrap-single-owner"
+  },
+  "risk": {
+    "class": "R4",
+    "protected_paths": [
+      "governance/**",
+      "initiatives/**",
+      "decisions/**",
+      "compatibility/**",
+      "policies/**",
+      "schemas/**",
+      "scripts/**",
+      ".github/workflows/**",
+      ".github/CODEOWNERS"
+    ],
+    "generated_paths": ["generated/**"],
+    "network_policy": "deny-by-default",
+    "secrets_policy": "forbidden-in-repository",
+    "external_side_effects": [
+      "issue-reconciliation",
+      "repository-administration-proposal"
+    ]
+  },
+  "agent": {
+    "entrypoint": "AGENTS.md",
+    "bootstrap": "./scripts/agent-bootstrap",
+    "verify": {
+      "fast": "./scripts/agent-check fast",
+      "full": "./scripts/agent-check full"
+    }
+  },
+  "contracts": {
+    "produces": [
+      "opencoven.repository-registry.v1",
+      "opencoven.initiative.v1",
+      "opencoven.governance-evidence.v1"
+    ],
+    "consumes": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "../schemas/release-trains.schema.json",
+  "schema_version": "opencoven.release-trains/v1",
+  "release_trains": [
+    {
+      "id": "trust-stack",
+      "members": [
+        "familiar-contract",
+        "coven-threads",
+        "psyche",
+        "coven",
+        "coven-runtimes",
+        "sdk",
+        "coven-memory"
+      ],
+      "policy": "Compatibility changes require immutable producer artifacts and pinned downstream canaries before a coordinated claim."
+    },
+    {
+      "id": "product-delivery",
+      "members": [
+        "coven",
+        "psyche",
+        "sdk",
+        "coven-code",
+        "psyche-build",
+        "coven-cave",
+        "coven-docs"
+      ],
+      "policy": "Product release sequencing is derived from owning-repository evidence; this index does not approve releases."
+    }
+  ]
+}

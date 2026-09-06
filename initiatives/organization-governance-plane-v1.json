@@ -1,0 +1,89 @@
+{
+  "$schema": "../schemas/initiative.schema.json",
+  "schema_version": "opencoven.initiative/v1",
+  "id": "organization-governance-plane-v1",
+  "title": "Activate the OpenCoven public organization governance plane",
+  "status": "active",
+  "priority": "P0",
+  "decision_owner": "BunsDev",
+  "technical_dri": "BunsDev",
+  "ownership_status": "bootstrap-single-owner",
+  "outcome": "Establish one reviewed, machine-readable public plane for repository ownership, lifecycle, cross-repository outcomes, shared policy, drift detection, and generated views without creating a competing implementation authority.",
+  "non_goals": [
+    "Reimplementing component behavior in .github.",
+    "Publishing private repository inventory or confidential operational data.",
+    "Treating policy text as proof that GitHub settings or OpenCoven runtime controls are enforced."
+  ],
+  "decisions": [
+    "ADR-0001",
+    "ADR-0002",
+    "ADR-0003"
+  ],
+  "dependencies": [],
+  "workstreams": [
+    {
+      "repository": ".github",
+      "responsibility": "Own schemas, registry, ADRs, policies, deterministic validation, generated views, and reusable read-only workflows.",
+      "issues": [
+        "OpenCoven/.github#5"
+      ],
+      "state": "in-progress"
+    },
+    {
+      "repository": ".github",
+      "responsibility": "Track and evidence organization-setting hardening as a separate administrative gate.",
+      "issues": [
+        "OpenCoven/.github#6"
+      ],
+      "state": "blocked-on-admin-application"
+    },
+    {
+      "repository": ".github",
+      "responsibility": "Layer advanced automation conformance and compatibility workflows on the base governance contract.",
+      "issues": [
+        "OpenCoven/.github#2"
+      ],
+      "state": "planned"
+    }
+  ],
+  "exit_criteria": [
+    {
+      "id": "EC-01",
+      "statement": "ADR-0001 is ratified through reviewed merge.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-02",
+      "statement": "Fast deterministic validation passes from a clean clone.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-03",
+      "statement": "Generated views exactly match authoritative records.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-04",
+      "statement": "Current public GitHub inventory reconciles without undeclared drift.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-05",
+      "statement": "Administrative branch, Actions, app, environment, and break-glass controls are independently evidenced.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-06",
+      "statement": "At least two canonical repositories consume the reusable agent-readiness workflow at an immutable revision.",
+      "state": "open",
+      "evidence": []
+    }
+  ],
+  "review_by": "2026-10-03",
+  "authority_boundary": "This initiative coordinates responsibility and evidence. It does not grant protected identity, authorization, runtime, persistence, release, publication, or GitHub-administration authority."
+}
