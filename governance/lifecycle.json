@@ -1,0 +1,83 @@
+{
+  "$schema": "../schemas/lifecycle.schema.json",
+  "schema_version": "opencoven.lifecycle/v1",
+  "lifecycle_states": {
+    "incubating": {
+      "public_claim": "experimental",
+      "allowed_transitions": [
+        "active",
+        "deprecated",
+        "archived"
+      ],
+      "review_interval_days": 30
+    },
+    "active": {
+      "public_claim": "actively-developed",
+      "allowed_transitions": [
+        "maintenance",
+        "deprecated"
+      ],
+      "review_interval_days": 90
+    },
+    "maintenance": {
+      "public_claim": "supported-with-limited-change",
+      "allowed_transitions": [
+        "active",
+        "deprecated",
+        "archived"
+      ],
+      "review_interval_days": 60
+    },
+    "deprecated": {
+      "public_claim": "successor-or-retirement-planned",
+      "allowed_transitions": [
+        "maintenance",
+        "archived",
+        "tombstone"
+      ],
+      "review_interval_days": 30
+    },
+    "archived": {
+      "public_claim": "read-only-historical-record",
+      "allowed_transitions": [
+        "maintenance",
+        "tombstone"
+      ],
+      "review_interval_days": 365
+    },
+    "tombstone": {
+      "public_claim": "minimal-successor-pointer",
+      "allowed_transitions": [],
+      "review_interval_days": 365
+    }
+  },
+  "canonicality_states": {
+    "canonical": "Owns one or more unique public domains.",
+    "supporting": "Supports canonical components without owning their domains.",
+    "specimen": "Reference or experimental surface that cannot define production behavior.",
+    "historical": "Historical evidence only.",
+    "none": "No canonical claim."
+  },
+  "risk_classes": {
+    "R0": {
+      "scope": "Documentation, examples, and copy.",
+      "default_agent_authority": "autonomous-pr-after-validation"
+    },
+    "R1": {
+      "scope": "Pure code without external mutable state.",
+      "default_agent_authority": "autonomous-branch-and-pr"
+    },
+    "R2": {
+      "scope": "Local mutable state, schemas, or migrations.",
+      "default_agent_authority": "proposal-plus-deterministic-fixture"
+    },
+    "R3": {
+      "scope": "Network, credentials, user data, remote APIs, or publication-adjacent behavior.",
+      "default_agent_authority": "approval-gated-execution"
+    },
+    "R4": {
+      "scope": "Identity, authorization, persistence, release, deletion, or organization administration.",
+      "default_agent_authority": "human-approved-plan-and-protected-owner-review"
+    }
+  }
+}

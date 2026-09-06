@@ -1,0 +1,30 @@
+{
+  "$id": "https://opencoven.ai/schemas/lifecycle-v1.json",
+  "title": "OpenCoven lifecycle and risk model",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "lifecycle_states",
+    "canonicality_states",
+    "risk_classes"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.lifecycle/v1"
+    },
+    "lifecycle_states": {
+      "type": "object"
+    },
+    "canonicality_states": {
+      "type": "object"
+    },
+    "risk_classes": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

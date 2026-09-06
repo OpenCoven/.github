@@ -1,0 +1,60 @@
+name: Repository lifecycle change
+description: Propose creation, graduation, consolidation, archival, transfer, visibility change, or retirement
+labels: [governance, repository-lifecycle]
+body:
+  - type: input
+    id: repository
+    attributes:
+      label: Public repository
+      placeholder: OpenCoven/name
+    validations:
+      required: true
+  - type: dropdown
+    id: action
+    attributes:
+      label: Proposed lifecycle action
+      options:
+        - create
+        - graduate
+        - move-to-maintenance
+        - deprecate
+        - consolidate
+        - archive
+        - transfer
+        - change-visibility
+        - tombstone
+        - delete-after-gate
+    validations:
+      required: true
+  - type: textarea
+    id: ownership
+    attributes:
+      label: Canonical ownership analysis
+      description: Explain why an existing canonical repository cannot own new work, or identify the successor for retirement.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference, package, release, installer, domain, and webhook inventory
+    validations:
+      required: true
+  - type: textarea
+    id: provenance
+    attributes:
+      label: License, provenance, issue, release, and history preservation
+    validations:
+      required: true
+  - type: textarea
+    id: migration
+    attributes:
+      label: Migration, observation, rollback, and user impact
+    validations:
+      required: true
+  - type: checkboxes
+    id: authorization
+    attributes:
+      label: Explicit authorization gate
+      options:
+        - label: I understand that filing or approving this issue does not itself authorize archive, transfer, visibility change, deletion, release, or publication.
+          required: true

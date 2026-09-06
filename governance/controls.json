@@ -1,0 +1,115 @@
+{
+  "$schema": "../schemas/controls.schema.json",
+  "schema_version": "opencoven.controls/v1",
+  "controls": [
+    {
+      "id": "GOV-001",
+      "title": "Unique canonical ownership",
+      "objective": "Every canonical public domain has exactly one owning repository.",
+      "evidence": [
+        "governance/repositories.json",
+        "generated/ownership.md"
+      ],
+      "enforcement": "scripts/governance.py validate",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-002",
+      "title": "Public/private minimization",
+      "objective": "The public registry contains public repositories and non-sensitive metadata only.",
+      "evidence": [
+        "policies/public-private-data.md",
+        "tests/test_governance.py"
+      ],
+      "enforcement": "registry scope and secret-like-data validation",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-003",
+      "title": "Lifecycle accountability",
+      "objective": "Every public repository has a lifecycle, owner, DRI, risk class, disposition, and review date.",
+      "evidence": [
+        "governance/repositories.json"
+      ],
+      "enforcement": "scripts/governance.py validate",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-004",
+      "title": "Derived-view integrity",
+      "objective": "Generated portfolio views exactly reflect authoritative records.",
+      "evidence": [
+        "generated/",
+        "scripts/governance.py"
+      ],
+      "enforcement": "generate --check",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-005",
+      "title": "Least-privilege workflows",
+      "objective": "Workflows declare permissions and pin third-party Actions to immutable commits.",
+      "evidence": [
+        ".github/workflows/",
+        "tests/test_governance.py"
+      ],
+      "enforcement": "workflow policy validation",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-006",
+      "title": "Protected governance branch",
+      "objective": "Governance changes enter main only through reviewed, checked pull requests.",
+      "evidence": [
+        "OpenCoven/.github#6"
+      ],
+      "enforcement": "GitHub organization ruleset",
+      "status": "administrative-gate-open"
+    },
+    {
+      "id": "GOV-007",
+      "title": "Exception expiry",
+      "objective": "Every waiver is scoped, approved, expiring, and visible.",
+      "evidence": [
+        "governance/exceptions.json",
+        "policies/exceptions.md"
+      ],
+      "enforcement": "scripts/governance.py validate",
+      "status": "implemented"
+    },
+    {
+      "id": "GOV-008",
+      "title": "Repository drift detection",
+      "objective": "Declared public inventory is reconciled against GitHub without becoming a second mutable status store.",
+      "evidence": [
+        ".github/workflows/governance-drift.yml",
+        "scripts/governance.py"
+      ],
+      "enforcement": "scheduled read-only discovery plus one issue",
+      "status": "implemented-pending-merge"
+    },
+    {
+      "id": "GOV-009",
+      "title": "Protected authority separation",
+      "objective": "Governance metadata cannot grant OpenCoven runtime or protected mutation authority.",
+      "evidence": [
+        "decisions/ADR-0001-organization-governance-plane.md",
+        "policies/authority-boundaries.md"
+      ],
+      "enforcement": "review, schemas, and architecture canaries in owning repositories",
+      "status": "specified"
+    },
+    {
+      "id": "GOV-010",
+      "title": "Evidence-backed change",
+      "objective": "Material governance changes include machine-readable, reviewable evidence.",
+      "evidence": [
+        "schemas/evidence-packet.schema.json",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        "evidence/2026-09-03-organization-governance-plane-v1.json"
+      ],
+      "enforcement": "reusable evidence workflow",
+      "status": "implemented-pending-adoption"
+    }
+  ]
+}

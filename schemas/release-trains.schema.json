@@ -1,0 +1,49 @@
+{
+  "$id": "https://opencoven.ai/schemas/release-trains-v1.json",
+  "title": "OpenCoven release train index",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "release_trains"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.release-trains/v1"
+    },
+    "release_trains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "members",
+          "policy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[.A-Za-z0-9_-]+$"
+            },
+            "minItems": 1
+          },
+          "policy": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

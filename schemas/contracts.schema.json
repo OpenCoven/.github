@@ -1,0 +1,54 @@
+{
+  "$id": "https://opencoven.ai/schemas/contracts-v1.json",
+  "title": "OpenCoven public contract index",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "contracts",
+    "claim_rule"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.contract-index/v1"
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "owner",
+          "status",
+          "immutable_release_required"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^[.A-Za-z0-9_-]+$"
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "immutable_release_required": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "claim_rule": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
