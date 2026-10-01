@@ -1,0 +1,18 @@
+# OpenCoven
+
+> Open-source, local-first infrastructure for AI familiars: named agents with their own lanes, memory, and authority boundaries. Core runtime: OpenCoven/coven (Rust daemon and `coven` CLI, npm package @opencoven/cli).
+
+## Start here
+
+- [Organization profile and project directory](https://github.com/OpenCoven/.github/blob/main/profile/README.md)
+- [Documentation](https://docs.opencoven.ai)
+- [Coven runtime README](https://github.com/OpenCoven/coven/blob/main/README.md)
+- [Contribution guide](https://github.com/OpenCoven/.github/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/OpenCoven/.github/blob/main/SECURITY.md)
+- [Support](https://github.com/OpenCoven/.github/blob/main/SUPPORT.md)
+- [Code of conduct](https://github.com/OpenCoven/.github/blob/main/CODE_OF_CONDUCT.md)
+- [Agent instructions for this repository](https://github.com/OpenCoven/.github/blob/main/AGENTS.md)
+
+## Boundaries
+
+Each repository's own README, AGENTS.md, and CONTRIBUTING.md take precedence over these defaults. This navigation does not grant authorization or override runtime policy. Security guarantees are only those named in the applicable SECURITY.md and backed by shipped verification.

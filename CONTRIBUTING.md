@@ -36,7 +36,7 @@ Signed-off-by: Your Name <your.email@example.com>
 
 By contributing, you additionally agree not to assert any patent claims — now held or later acquired — against this project or its users that arise from your contribution. See [PATENTS](./PATENTS) for the full non-assertion pledge.
 
-## What We're Looking For
+## What we're looking for
 
 - Bug fixes and reliability improvements
 - Documentation and example improvements
@@ -44,17 +44,32 @@ By contributing, you additionally agree not to assert any patent claims — now 
 - Performance improvements
 - Community-requested features
 
-## What We're Not
+## What we're not
 
 OpenCoven is not a contribution vehicle for proprietary forks. If you are building a closed-source derivative of OpenCoven's architecture, please do not use contribution as a means to learn implementation details that are not yet public. We welcome genuine collaborators.
 
-## Getting Started
+## Getting started
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes with signed-off commits: `git commit -s`
-4. Open a pull request with a clear description
+1. **Read the repository's own guide.** A repository's `CONTRIBUTING.md`, `AGENTS.md`, and PR template take precedence over this default.
+2. **Start from an issue for larger changes.** Small fixes can go straight to a PR; for new features or behavior changes, open or comment on an issue first so maintainers can confirm the direction.
+3. **Fork and branch:** `git checkout -b fix/short-description`.
+4. **Make focused, signed-off commits:** `git commit -s`. One concern per PR.
+5. **Verify.** Run the repository's documented build, lint, and test commands, and list the exact commands and results in the PR.
+6. **Open a pull request** with a clear description, linked issue, and screenshots for UI changes.
+
+## Agent-assisted contributions
+
+OpenCoven is built for working with agents, and agent-assisted contributions are welcome. You remain the author:
+
+- review and understand every line you submit, and sign off only on work you can certify under the DCO;
+- say in the PR when an agent wrote a substantial part of the change;
+- do not submit bulk or automated PRs, issues, or comments without a maintainer's agreement;
+- never paste real credentials, prompts, memories, or private session data into fixtures, logs, or screenshots.
+
+## Community standards
+
+Participation in OpenCoven spaces is covered by the [Code of Conduct](./CODE_OF_CONDUCT.md). Report security vulnerabilities privately as described in [SECURITY.md](./SECURITY.md), never in a public issue.
 
 ## Questions?
 
-Join the Discord: https://discord.gg/OpenCoven
+See [SUPPORT.md](./SUPPORT.md), or join the Discord: https://discord.gg/opencoven

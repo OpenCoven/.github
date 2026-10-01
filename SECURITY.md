@@ -14,9 +14,9 @@ OpenCoven is an early-stage, identity-preserving familiar infrastructure project
 
 Use the following private path:
 
-1. Open a **GitHub Security Advisory** in the repository most directly affected.
-2. If the finding spans repositories, name every known affected repository and contract in that advisory.
-3. If the correct repository is unclear, use the private advisory intake in [`OpenCoven/coven`](https://github.com/OpenCoven/coven/security/advisories/new) and state that the report is organization-wide so it can be routed without publishing the details.
+1. Open a **GitHub Security Advisory** in the repository most directly affected: go to its **Security** tab and choose **Report a vulnerability**.
+2. If that repository does not offer **Report a vulnerability** (private reporting is not enabled on every repository), or the correct repository is unclear, use the private advisory intake in [`OpenCoven/coven`](https://github.com/OpenCoven/coven/security/advisories/new). Name the actual affected repository in the report so it can be routed without publishing the details.
+3. If the finding spans repositories, name every known affected repository and contract in that advisory.
 
 Include, where safe and applicable:
 
@@ -83,4 +83,4 @@ Unless supported by current evidence for the named surface, OpenCoven does not c
 - Public security pages should link to the applicable policy and avoid copying mutable promises into marketing content.
 - Security-policy drift between the organization and canonical repositories should fail review rather than be silently reconciled in downstream copy.
 
-*Last updated: 2026-08-31*
+*Last updated: 2026-10-01*
