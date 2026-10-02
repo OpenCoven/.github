@@ -1,0 +1,59 @@
+name: Bug report
+description: Something is broken or behaves differently than documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Security vulnerabilities go through the [security policy](https://github.com/OpenCoven/.github/blob/main/SECURITY.md), not a public issue.**
+        Use synthetic data. Redact credentials, tokens, prompts, memories, session IDs, and private paths.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The exact commands or clicks, starting from a clean state if possible.
+      placeholder: |
+        1. cd into a project
+        2. run `coven run codex "..."`
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release, package version, or commit SHA (for example `coven --version`).
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      multiple: true
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux
+        - Windows
+        - iOS
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Relevant output, `coven doctor` results, or screenshots. Redact anything sensitive.
+      render: shell
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Harness and model in use, workarounds you tried, or related issues.

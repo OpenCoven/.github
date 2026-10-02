@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/OpenCoven/.github/blob/main/SECURITY.md
+    about: Do not open a public issue. Follow the private reporting steps in the security policy.
+  - name: Ask a question on Discord
+    url: https://discord.gg/opencoven
+    about: Setup help and open-ended questions get the fastest answers in Discord.
+  - name: Read the documentation
+    url: https://docs.opencoven.ai
+    about: Installation, CLI, daemon, harnesses, memory, and troubleshooting guides.
+  - name: Share product feedback
+    url: https://feedback.opencoven.ai
+    about: Ideas and feedback that aren't a specific bug or feature request.
