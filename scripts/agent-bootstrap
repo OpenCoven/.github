@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+command -v python3 >/dev/null 2>&1 || {
+  echo "python3 is required" >&2
+  exit 1
+}
+
+python3 - <<'PY'
+import sys
+if sys.version_info < (3, 11):
+    raise SystemExit(f"Python 3.11+ is required; found {sys.version.split()[0]}")
+print(f"Python {sys.version.split()[0]} available.")
+PY
+
+for path in README.md AGENTS.md agent/manifest.json governance/repositories.json scripts/governance.py; do
+  test -f "$path" || { echo "missing required path: $path" >&2; exit 1; }
+done
+
+echo "OpenCoven governance bootstrap passed; no dependencies installed and no network used."

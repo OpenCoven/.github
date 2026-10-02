@@ -1,0 +1,5 @@
+{
+  "$schema": "../schemas/exception.schema.json",
+  "schema_version": "opencoven.exception-set/v1",
+  "exceptions": []
+}

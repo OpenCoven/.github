@@ -1,0 +1,50 @@
+{
+  "$id": "https://opencoven.ai/schemas/dependencies-v1.json",
+  "title": "OpenCoven public dependency graph",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "edges"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.dependencies/v1"
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "producer",
+          "consumer",
+          "relationship",
+          "required_evidence"
+        ],
+        "properties": {
+          "producer": {
+            "type": "string",
+            "pattern": "^[.A-Za-z0-9_-]+$"
+          },
+          "consumer": {
+            "type": "string",
+            "pattern": "^[.A-Za-z0-9_-]+$"
+          },
+          "relationship": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

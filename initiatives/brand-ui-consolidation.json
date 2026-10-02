@@ -1,0 +1,92 @@
+{
+  "$schema": "../schemas/initiative.schema.json",
+  "schema_version": "opencoven.initiative/v1",
+  "id": "brand-ui-consolidation",
+  "title": "Consolidate Brand, UI, and production design authority",
+  "status": "active",
+  "priority": "P1",
+  "decision_owner": "BunsDev",
+  "technical_dri": "BunsDev",
+  "ownership_status": "bootstrap-single-owner",
+  "outcome": "Preserve one canonical Brand profile, keep UI as a mechanically pinned specimen laboratory, and keep Cave authoritative for production component behavior.",
+  "non_goals": [
+    "Creating another canonical token/profile root.",
+    "Treating a design mock or specimen as production behavior.",
+    "Removing historical evidence before consumers migrate."
+  ],
+  "decisions": [
+    "ADR-0001",
+    "ADR-0002"
+  ],
+  "dependencies": [
+    "organization-governance-plane-v1"
+  ],
+  "workstreams": [
+    {
+      "repository": "brand",
+      "responsibility": "Own the sole normative visual identity, voice, and versioned public-web profile.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "ui",
+      "responsibility": "Consume an immutable Brand profile and remain explicitly noncanonical for production behavior.",
+      "issues": [],
+      "state": "in-progress"
+    },
+    {
+      "repository": "coven-cave",
+      "responsibility": "Own production component behavior and downstream acceptance evidence.",
+      "issues": [],
+      "state": "planned"
+    },
+    {
+      "repository": "coven-design-system",
+      "responsibility": "Extract non-duplicative work and retire its canonical claim after consumer migration.",
+      "issues": [],
+      "state": "planned"
+    },
+    {
+      "repository": ".github",
+      "responsibility": "Record cross-repository resolution, dependency, and administrative protection gates.",
+      "issues": [
+        "OpenCoven/.github#6"
+      ],
+      "state": "in-progress"
+    }
+  ],
+  "exit_criteria": [
+    {
+      "id": "EC-01",
+      "statement": "Brand exposes one versioned normative public profile.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-02",
+      "statement": "UI pins and verifies the Brand profile without claiming production authority.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-03",
+      "statement": "Cave passes production UI/brand canaries.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-04",
+      "statement": "Useful design-system work is migrated with provenance and duplicate authority is retired.",
+      "state": "open",
+      "evidence": []
+    },
+    {
+      "id": "EC-05",
+      "statement": "Required reviews and checks protect canonical Brand and production UI paths.",
+      "state": "open",
+      "evidence": []
+    }
+  ],
+  "review_by": "2026-10-03",
+  "authority_boundary": "This initiative coordinates responsibility and evidence. It does not grant protected identity, authorization, runtime, persistence, release, publication, or GitHub-administration authority."
+}

@@ -1,0 +1,210 @@
+{
+  "$id": "https://opencoven.ai/schemas/agent-manifest-v1.json",
+  "title": "OpenCoven repository agent contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "repository",
+    "risk",
+    "agent",
+    "contracts"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.agent-repo/v1"
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "name",
+        "lifecycle",
+        "canonicality",
+        "canonical_for",
+        "does_not_own",
+        "owner",
+        "technical_dri",
+        "ownership_status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[.A-Za-z0-9_-]+$"
+        },
+        "lifecycle": {
+          "enum": [
+            "incubating",
+            "active",
+            "maintenance",
+            "deprecated",
+            "archived",
+            "tombstone"
+          ]
+        },
+        "canonicality": {
+          "enum": [
+            "canonical",
+            "supporting",
+            "specimen",
+            "historical",
+            "none"
+          ]
+        },
+        "canonical_for": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "does_not_own": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "technical_dri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ownership_status": {
+          "enum": [
+            "bootstrap-single-owner",
+            "separated",
+            "delegated",
+            "vacant"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "risk": {
+      "type": "object",
+      "required": [
+        "class",
+        "protected_paths",
+        "generated_paths",
+        "network_policy",
+        "secrets_policy",
+        "external_side_effects"
+      ],
+      "properties": {
+        "class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ]
+        },
+        "protected_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "generated_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "network_policy": {
+          "enum": [
+            "deny",
+            "deny-by-default",
+            "explicit-allowlist",
+            "required"
+          ]
+        },
+        "secrets_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "external_side_effects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "agent": {
+      "type": "object",
+      "required": [
+        "entrypoint",
+        "bootstrap",
+        "verify"
+      ],
+      "properties": {
+        "entrypoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bootstrap": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verify": {
+          "type": "object",
+          "required": [
+            "fast",
+            "full"
+          ],
+          "properties": {
+            "fast": {
+              "type": "string",
+              "minLength": 1
+            },
+            "full": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "contracts": {
+      "type": "object",
+      "required": [
+        "produces",
+        "consumes"
+      ],
+      "properties": {
+        "produces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "consumes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

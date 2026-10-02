@@ -1,0 +1,59 @@
+{
+  "$id": "https://opencoven.ai/schemas/decision-index-v1.json",
+  "title": "OpenCoven decision index",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "decisions"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "opencoven.decision-index/v1"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "path",
+          "date"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ADR-[0-9]{4}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "accepted",
+              "superseded",
+              "rejected"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

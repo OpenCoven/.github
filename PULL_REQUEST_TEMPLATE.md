@@ -1,5 +1,7 @@
 ## Summary
 
+<!-- Changing governance records in OpenCoven/.github? Use the governance checklist instead: https://github.com/OpenCoven/.github/blob/main/docs/templates/governance-pull-request.md -->
+
 <!-- What does this change and why? Link the issue it addresses: "Fixes #123". -->
 
 ## Verification
