@@ -1,5 +1,5 @@
 name: Cross-repository initiative
-description: Propose an organization-level outcome spanning repositories
+description: "Org governance, file in OpenCoven/.github: propose an organization-level outcome spanning repositories"
 labels: [governance, initiative]
 body:
   - type: markdown

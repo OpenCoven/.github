@@ -1,5 +1,5 @@
 name: Repository lifecycle change
-description: Propose creation, graduation, consolidation, archival, transfer, visibility change, or retirement
+description: "Org governance, file in OpenCoven/.github: propose creation, graduation, consolidation, archival, transfer, visibility change, or retirement"
 labels: [governance, repository-lifecycle]
 body:
   - type: input

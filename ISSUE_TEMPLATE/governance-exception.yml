@@ -1,5 +1,5 @@
 name: Governance exception
-description: Request a narrow, compensating, expiring policy exception
+description: "Org governance, file in OpenCoven/.github: request a narrow, compensating, expiring policy exception"
 labels: [governance, exception]
 body:
   - type: input
