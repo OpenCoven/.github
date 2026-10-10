@@ -1,0 +1,543 @@
+name: Reusable OpenCoven agent readiness
+
+on:
+  workflow_call:
+    inputs:
+      policy_ref:
+        description: Immutable 40-character commit SHA of OpenCoven/.github
+        required: true
+        type: string
+      manifest_path:
+        description: Repository-relative agent manifest path
+        required: false
+        default: agent/manifest.json
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    name: validate-agent-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Require immutable policy reference
+        env:
+          POLICY_REF: ${{ inputs.policy_ref }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          value = os.environ["POLICY_REF"]
+          if not re.fullmatch(r"[0-9a-fA-F]{40}", value):
+              raise SystemExit("policy_ref must be a full immutable commit SHA")
+          PY
+      - name: Check out target repository without credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          path: target
+          persist-credentials: false
+      - name: Preflight caller policy binding before policy checkout
+        env:
+          POLICY_REF: ${{ inputs.policy_ref }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+          REUSABLE_WORKFLOW: reusable-agent-readiness.yml
+          PATH_INPUT_NAME: manifest_path
+          RUNTIME_PATH: ${{ inputs.manifest_path }}
+          DEFAULT_RUNTIME_PATH: agent/manifest.json
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path, PurePosixPath
+
+          # Split the opener so Actions does not evaluate it before Python.
+          EXPRESSION_START = "$" + "{{"
+          SHA40 = re.compile(r"^[0-9a-fA-F]{40}$")
+          EVENT_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
+          JOB_ID = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
+          PLAIN_YAML_KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
+          JOB_LEVEL_REUSABLE_USE = re.compile(
+              r"^(?:"
+              r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/\.github/workflows/[A-Za-z0-9_.-]+\.ya?ml@[^\s{}\[\],#]+"
+              r"|"
+              r"\./\.github/workflows/[A-Za-z0-9_.\/-]+\.ya?ml"
+              r")$"
+          )
+
+          def clean_scalar(value):
+              value = value.strip()
+              if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+                  return value[1:-1]
+              return value
+
+          def event_name(value, label):
+              if not value or value[0] in {"!", ">", "|"}:
+                  raise SystemExit(f"{label}: unsupported event scalar syntax")
+              if not EVENT_NAME.fullmatch(value):
+                  raise SystemExit(f"{label}: event names must be plain or unescaped quoted ASCII identifiers")
+              return value
+
+          def is_yaml_content(line):
+              return bool(line.strip() and not line.lstrip().startswith("#"))
+
+          def strip_yaml_comment(value):
+              quote = None
+              escaped = False
+              for index, char in enumerate(value):
+                  if escaped:
+                      escaped = False
+                      continue
+                  if quote == '"' and char == "\\":
+                      escaped = True
+                      continue
+                  if quote:
+                      if char == quote:
+                          quote = None
+                      continue
+                  if char in {"'", '"'}:
+                      quote = char
+                      continue
+                  if char == "#" and (index == 0 or value[index - 1].isspace()):
+                      return value[:index].rstrip()
+              return value.rstrip()
+
+          def yaml_key_value(line):
+              item = yaml_key_value_parts(line)
+              if not item:
+                  return None
+              indent, _raw_key, key, _raw_value, value = item
+              return indent, key, value
+
+          def yaml_key_value_parts(line):
+              if not line.strip() or line.lstrip().startswith("#"):
+                  return None
+              if "\t" in line:
+                  raise SystemExit("caller workflow YAML tabs are unsupported")
+              raw = strip_yaml_comment(line)
+              key = r"(?:[A-Za-z0-9_.-]+|'[^']+'|\"[^\"]+\")"
+              match = re.match(rf"^(?P<indent> *)(?P<key>{key}):(?P<value>(?:\s+.*)?)$", raw)
+              if not match:
+                  return None
+              value = match.group("value")
+              raw_key = match.group("key")
+              raw_value = value.strip() if value and value.strip() else None
+              return (
+                  len(match.group("indent")),
+                  raw_key,
+                  clean_scalar(raw_key),
+                  raw_value,
+                  clean_scalar(raw_value) if raw_value else None,
+              )
+
+          def yaml_sequence_item(line):
+              if not line.strip() or line.lstrip().startswith("#"):
+                  return None
+              if "\t" in line:
+                  raise SystemExit("caller workflow YAML tabs are unsupported")
+              raw = strip_yaml_comment(line)
+              match = re.match(r"^(?P<indent> *)-\s+(?P<value>.+)$", raw)
+              if not match:
+                  return None
+              return len(match.group("indent")), clean_scalar(match.group("value"))
+
+          def parse_flow_sequence(value, label):
+              text = value.strip()
+              if not text.startswith("[") or not text.endswith("]"):
+                  raise SystemExit(f"{label}: unsupported flow sequence syntax")
+              inner = text[1:-1].strip()
+              if not inner:
+                  return []
+              items = []
+              token = []
+              quote = None
+              escaped = False
+              for char in inner:
+                  if escaped:
+                      token.append(char)
+                      escaped = False
+                      continue
+                  if quote == '"' and char == "\\":
+                      token.append(char)
+                      escaped = True
+                      continue
+                  if quote:
+                      token.append(char)
+                      if char == quote:
+                          quote = None
+                      continue
+                  if char in {"'", '"'}:
+                      quote = char
+                      token.append(char)
+                      continue
+                  if char == ",":
+                      item = "".join(token).strip()
+                      if not item:
+                          raise SystemExit(f"{label}: empty flow sequence items are unsupported")
+                      items.append(clean_scalar(item))
+                      token = []
+                      continue
+                  if char in "{}[]":
+                      raise SystemExit(f"{label}: nested flow YAML is unsupported")
+                  token.append(char)
+              if quote:
+                  raise SystemExit(f"{label}: unterminated quoted scalar")
+              item = "".join(token).strip()
+              if not item:
+                  raise SystemExit(f"{label}: empty flow sequence items are unsupported")
+              items.append(clean_scalar(item))
+              return items
+
+          def top_level_block(lines, key):
+              found = None
+              for index, line in enumerate(lines):
+                  item = yaml_key_value_parts(line)
+                  if not item:
+                      continue
+                  indent, raw_key, item_key, _raw_value, value = item
+                  if indent == 0 and item_key == key:
+                      if raw_key != key:
+                          raise SystemExit(f"top-level YAML key must be plain for policy checks: {key}")
+                      if found is not None:
+                          raise SystemExit(f"duplicate top-level YAML key is unsupported: {key}")
+                      block = []
+                      for child in lines[index + 1:]:
+                          child_item = yaml_key_value(child)
+                          if child_item and child_item[0] == 0:
+                              break
+                          block.append(child)
+                      found = (value, block)
+              return found if found is not None else (None, [])
+
+          def workflow_declares_workflow_call(lines):
+              value, block = top_level_block(lines, "on")
+              events = []
+              if value is not None:
+                  if any(is_yaml_content(line) for line in block):
+                      raise SystemExit("caller workflow on: unsupported continuation lines after scalar event declaration")
+                  if value.startswith("{"):
+                      raise SystemExit("caller workflow on: flow mappings are unsupported")
+                  if value.startswith("["):
+                      events.extend(event_name(event, "caller workflow on") for event in parse_flow_sequence(value, "caller workflow on"))
+                  elif any(char in value for char in "{}[]"):
+                      raise SystemExit("caller workflow on: unsupported flow YAML syntax")
+                  else:
+                      events.append(event_name(clean_scalar(value), "caller workflow on"))
+              else:
+                  entries = []
+                  for line in block:
+                      sequence = yaml_sequence_item(line)
+                      if sequence:
+                          indent, sequence_value = sequence
+                          entries.append((indent, "sequence", sequence_value, None))
+                          continue
+                      item = yaml_key_value(line)
+                      if item:
+                          indent, key, item_value = item
+                          entries.append((indent, "mapping", key, item_value))
+                          continue
+                      if is_yaml_content(line):
+                          raise SystemExit("caller workflow on: unsupported continuation or scalar syntax")
+                  if not entries:
+                      raise SystemExit("caller workflow must declare on using a supported literal event form")
+                  event_indent = min(indent for indent, *_ in entries)
+                  direct = [entry for entry in entries if entry[0] == event_indent]
+                  if len({kind for _, kind, _, _ in direct}) != 1:
+                      raise SystemExit("caller workflow on: mixed sequence and mapping forms are unsupported")
+                  seen = set()
+                  for _, kind, event, event_value in direct:
+                      if event in seen:
+                          raise SystemExit(f"caller workflow on: duplicate event key is unsupported: {event}")
+                      seen.add(event)
+                      if kind == "sequence" and any(char in event for char in "{}[]"):
+                          raise SystemExit("caller workflow on: unsupported sequence item syntax")
+                      if event.startswith(("!", ">", "|")):
+                          raise SystemExit("caller workflow on: unsupported event scalar syntax")
+                      if kind == "mapping" and event_value is not None and event_value.startswith("{"):
+                          raise SystemExit("caller workflow on: flow mappings are unsupported")
+                      if kind == "mapping" and event_value is not None and event_value.startswith(("!", ">", "|")):
+                          raise SystemExit("caller workflow on: unsupported event value scalar syntax")
+                      events.append(event_name(clean_scalar(event), "caller workflow on"))
+              if "pull_request_target" in events:
+                  raise SystemExit("caller workflow pull_request_target is forbidden")
+              return "workflow_call" in events
+
+          def contains_yaml_anchor_or_alias(text):
+              return bool(
+                  re.search(r"(?m)^\s*<<\s*:", text)
+                  or re.search(r"(?<![\w/.-])[*&][A-Za-z_][A-Za-z0-9_-]*\b", text)
+              )
+
+          def line_indent(line):
+              if "\t" in line:
+                  raise SystemExit("caller workflow YAML tabs are unsupported")
+              return len(line) - len(line.lstrip(" "))
+
+          def validate_plain_security_key(raw_key, key, label):
+              if raw_key != key:
+                  raise SystemExit(f"{label}: quoted security-relevant keys are unsupported: {key}")
+              if not PLAIN_YAML_KEY.fullmatch(raw_key):
+                  raise SystemExit(f"{label}: unsupported security-relevant key syntax: {key}")
+
+          def validate_security_scalar(raw_value, value, label):
+              if raw_value is None or value is None:
+                  raise SystemExit(f"{label}: literal scalar value is required")
+              raw = raw_value.strip()
+              if not raw:
+                  raise SystemExit(f"{label}: literal scalar value is required")
+              if raw.startswith(("!", ">", "|", "&", "*")):
+                  raise SystemExit(f"{label}: YAML tags, block scalars, anchors, and aliases are unsupported")
+              if raw[0] in {"'", '"'}:
+                  raise SystemExit(f"{label}: quoted scalars are unsupported")
+              if any(char in raw for char in "{}[]"):
+                  raise SystemExit(f"{label}: flow YAML values are unsupported")
+
+          def block_has_yaml_content(block):
+              return any(is_yaml_content(line) for line in block)
+
+          def direct_child_properties(block, parent_indent, label):
+              child_items = []
+              unsupported_items = []
+              for offset, line in enumerate(block):
+                  if not is_yaml_content(line):
+                      continue
+                  indent = line_indent(line)
+                  item = yaml_key_value_parts(line)
+                  if item and item[0] > parent_indent:
+                      child_items.append((offset, *item))
+                  elif indent > parent_indent:
+                      unsupported_items.append((offset, indent, line.strip()))
+              if not child_items:
+                  if unsupported_items:
+                      raise SystemExit(f"{label}: unsupported direct job mapping syntax")
+                  return {}
+              child_indent = min(item[1] for item in child_items)
+              if any(indent <= child_indent for _offset, indent, _text in unsupported_items):
+                  raise SystemExit(f"{label}: unsupported direct job mapping syntax")
+              starts = [
+                  (offset, raw_key, key, raw_value, value)
+                  for offset, indent, raw_key, key, raw_value, value in child_items
+                  if indent == child_indent
+              ]
+              result = {}
+              for index, (offset, raw_key, key, raw_value, value) in enumerate(starts):
+                  if key in result:
+                      raise SystemExit(f"duplicate caller job YAML key is unsupported: {key}")
+                  end = starts[index + 1][0] if index + 1 < len(starts) else len(block)
+                  child_block = block[offset + 1:end]
+                  if key in {"uses", "with", "secrets"}:
+                      validate_plain_security_key(raw_key, key, label)
+                      if key == "uses":
+                          validate_security_scalar(raw_value, value, f"{label}: uses")
+                          if block_has_yaml_content(child_block):
+                              raise SystemExit(f"{label}: uses multiline values are unsupported")
+                          if value and not JOB_LEVEL_REUSABLE_USE.fullmatch(value):
+                              raise SystemExit(f"{label}: uses must be a canonical literal reusable workflow reference")
+                      elif key == "with" and value is not None:
+                          validate_security_scalar(raw_value, value, f"{label}: with")
+                      elif key == "secrets" and value is not None:
+                          validate_security_scalar(raw_value, value, f"{label}: secrets")
+                  result[key] = (value, child_block)
+              return result
+
+          def mapping_values(block, label):
+              child_items = []
+              unsupported_items = []
+              for line in block:
+                  if not is_yaml_content(line):
+                      continue
+                  indent = line_indent(line)
+                  item = yaml_key_value_parts(line)
+                  if item:
+                      child_items.append(item)
+                  else:
+                      unsupported_items.append((indent, line.strip()))
+              if not child_items:
+                  if unsupported_items:
+                      raise SystemExit(f"{label}: unsupported input mapping syntax")
+                  return {}
+              child_indent = min(item[0] for item in child_items)
+              if any(indent <= child_indent for indent, _text in unsupported_items):
+                  raise SystemExit(f"{label}: unsupported input mapping syntax")
+              result = {}
+              for indent, raw_key, key, raw_value, value in child_items:
+                  if indent != child_indent:
+                      continue
+                  validate_plain_security_key(raw_key, key, label)
+                  if key in result:
+                      raise SystemExit(f"duplicate caller with input is unsupported: {key}")
+                  validate_security_scalar(raw_value, value, f"{label}.{key}")
+                  result[key] = value
+              return result
+
+          def job_blocks(lines):
+              jobs_value, jobs_block = top_level_block(lines, "jobs")
+              if jobs_value is not None:
+                  raise SystemExit("caller workflow jobs: inline mappings are unsupported")
+              items = []
+              unsupported_items = []
+              for offset, line in enumerate(jobs_block):
+                  if not is_yaml_content(line):
+                      continue
+                  indent = line_indent(line)
+                  item = yaml_key_value(line)
+                  if item:
+                      indent, key, value = item
+                      items.append((offset, indent, key, value))
+                  else:
+                      unsupported_items.append((indent, line.strip()))
+              if not items:
+                  if unsupported_items:
+                      raise SystemExit("caller workflow jobs: unsupported job mapping syntax")
+                  return []
+              job_indent = min(indent for _, indent, _, _ in items)
+              if any(indent <= job_indent for indent, _text in unsupported_items):
+                  raise SystemExit("caller workflow jobs: unsupported job mapping syntax")
+              starts = []
+              seen = set()
+              for offset, indent, key, value in items:
+                  if indent != job_indent:
+                      continue
+                  raw_key = yaml_key_value_parts(jobs_block[offset])[1]
+                  if raw_key != key:
+                      raise SystemExit(f"caller workflow jobs: quoted job identifiers are unsupported: {key}")
+                  if not JOB_ID.fullmatch(key):
+                      raise SystemExit(f"caller workflow jobs: unsupported job identifier syntax: {key}")
+                  if key in seen:
+                      raise SystemExit(f"duplicate caller job id is unsupported: {key}")
+                  seen.add(key)
+                  if value is not None:
+                      raise SystemExit(f"caller job {key}: inline job mappings are unsupported")
+                  starts.append((offset, key))
+              jobs = []
+              for index, (offset, key) in enumerate(starts):
+                  end = starts[index + 1][0] if index + 1 < len(starts) else len(jobs_block)
+                  jobs.append((key, job_indent, jobs_block[offset + 1:end]))
+              return jobs
+
+          def resolve_caller_file(workflow_path):
+              parsed = PurePosixPath(workflow_path)
+              parts = parsed.parts
+              if parsed.is_absolute() or any(part in {"", ".", ".."} for part in parts):
+                  raise SystemExit("caller workflow path must be repository-relative")
+              if len(parts) != 3 or parts[:2] != (".github", "workflows") or not parts[-1].endswith((".yml", ".yaml")):
+                  raise SystemExit("caller workflow must be a direct .github/workflows YAML file")
+              root = Path("target").resolve(strict=True)
+              current = root
+              for index, part in enumerate(parts):
+                  current = current / part
+                  if current.is_symlink():
+                      raise SystemExit(f"caller workflow symlink path component is forbidden: {PurePosixPath(*parts[:index + 1])}")
+                  if not current.exists():
+                      raise SystemExit("caller workflow file is missing")
+                  if index < len(parts) - 1 and not current.is_dir():
+                      raise SystemExit(f"caller workflow path component is not a directory: {PurePosixPath(*parts[:index + 1])}")
+              if not current.is_file():
+                  raise SystemExit("caller workflow file is not a regular file")
+              if not current.resolve(strict=True).is_relative_to(root):
+                  raise SystemExit("caller workflow resolved outside target checkout")
+              return current
+
+          policy_ref = os.environ["POLICY_REF"]
+          if not SHA40.fullmatch(policy_ref):
+              raise SystemExit("policy_ref must be a full immutable commit SHA")
+          caller_repository = os.environ["CALLER_REPOSITORY"]
+          workflow_ref = os.environ["CALLER_WORKFLOW_REF"]
+          match = re.fullmatch(r"([^/]+/[^/]+)/(.+)@(.+)", workflow_ref)
+          if not match or match.group(1) != caller_repository:
+              raise SystemExit("caller workflow ref must match the runtime caller repository")
+          caller_file = resolve_caller_file(match.group(2))
+          text = caller_file.read_text(encoding="utf-8")
+          if contains_yaml_anchor_or_alias(text):
+              raise SystemExit("caller workflow anchors, aliases, and merge keys are unsupported")
+          lines = text.splitlines()
+          if workflow_declares_workflow_call(lines):
+              raise SystemExit("nested reusable workflow callers are unsupported")
+          expected_uses_prefix = f"OpenCoven/.github/.github/workflows/{os.environ['REUSABLE_WORKFLOW']}@"
+          matches = []
+          for job_id, job_indent, block in job_blocks(lines):
+              props = direct_child_properties(block, job_indent, f"caller job {job_id}")
+              uses_value = props.get("uses", (None, []))[0]
+              if uses_value is None:
+                  continue
+              if EXPRESSION_START in uses_value:
+                  raise SystemExit(f"caller job {job_id}: expressions are unsupported in uses")
+              if uses_value.startswith("OpenCoven/.github/.github/workflows/") and not uses_value.startswith(expected_uses_prefix):
+                  raise SystemExit(f"caller job {job_id}: wrong reusable workflow {uses_value!r}")
+              if uses_value.startswith(expected_uses_prefix):
+                  matches.append((job_id, props, uses_value[len(expected_uses_prefix):]))
+          if len(matches) != 1:
+              raise SystemExit(f"expected exactly one direct caller job for {os.environ['REUSABLE_WORKFLOW']}; found {len(matches)}")
+          job_id, props, uses_ref = matches[0]
+          if not SHA40.fullmatch(uses_ref):
+              raise SystemExit(f"caller job {job_id}: reusable workflow ref must be a full immutable commit SHA")
+          if uses_ref != policy_ref:
+              raise SystemExit(f"caller job {job_id}: uses ref does not match runtime policy_ref")
+          if props.get("secrets", (None, []))[0] == "inherit":
+              raise SystemExit(f"caller job {job_id}: secrets: inherit is forbidden")
+          with_value, with_block = props.get("with", (None, []))
+          if with_value is not None:
+              raise SystemExit(f"caller job {job_id}: inline with mappings are unsupported")
+          with_inputs = mapping_values(with_block, f"caller job {job_id}: with")
+          path_input_name = os.environ["PATH_INPUT_NAME"]
+          unsupported_inputs = sorted(set(with_inputs) - {"policy_ref", path_input_name})
+          if unsupported_inputs:
+              raise SystemExit(f"caller job {job_id}: unsupported with input {unsupported_inputs[0]}")
+          literal_policy_ref = with_inputs.get("policy_ref")
+          if literal_policy_ref is None:
+              raise SystemExit(f"caller job {job_id}: with.policy_ref is required")
+          if EXPRESSION_START in literal_policy_ref:
+              raise SystemExit(f"caller job {job_id}: expressions are unsupported in with.policy_ref")
+          if literal_policy_ref != policy_ref or literal_policy_ref != uses_ref:
+              raise SystemExit(f"caller job {job_id}: with.policy_ref must match runtime policy_ref and reusable workflow uses ref")
+          literal_path = with_inputs.get(path_input_name) or os.environ.get("DEFAULT_RUNTIME_PATH") or None
+          if literal_path is None:
+              raise SystemExit(f"caller job {job_id}: with.{path_input_name} is required")
+          if EXPRESSION_START in literal_path:
+              raise SystemExit(f"caller job {job_id}: expressions are unsupported in with.{path_input_name}")
+          if literal_path != os.environ["RUNTIME_PATH"]:
+              raise SystemExit(f"caller job {job_id}: with.{path_input_name} does not match runtime input")
+          PY
+      - name: Check out immutable governance policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: OpenCoven/.github
+          ref: ${{ inputs.policy_ref }}
+          path: governance-policy
+          persist-credentials: false
+      - name: Verify immutable governance checkout
+        env:
+          POLICY_REF: ${{ inputs.policy_ref }}
+        run: |
+          test "$(git -C governance-policy rev-parse HEAD)" = "$POLICY_REF"
+      - name: Validate reusable caller policy binding
+        env:
+          POLICY_REF: ${{ inputs.policy_ref }}
+          MANIFEST_PATH: ${{ inputs.manifest_path }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          python3 governance-policy/scripts/governance.py validate-reusable-invocation \
+            --target-root "$GITHUB_WORKSPACE/target" \
+            --caller-workflow-ref "$CALLER_WORKFLOW_REF" \
+            --caller-repository "$CALLER_REPOSITORY" \
+            --policy-ref "$POLICY_REF" \
+            --reusable-workflow reusable-agent-readiness.yml \
+            --path-input-name manifest_path \
+            --runtime-path "$MANIFEST_PATH" \
+            --default-runtime-path agent/manifest.json
+      - name: Validate repository manifest against public registry
+        env:
+          MANIFEST_PATH: ${{ inputs.manifest_path }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 governance-policy/scripts/governance.py validate-manifest \
+            --target-root "$GITHUB_WORKSPACE/target" \
+            --caller-repository "$CALLER_REPOSITORY" \
+            "$MANIFEST_PATH"
+      - name: Run repository-native fast check
+        working-directory: target
+        run: ./scripts/agent-check fast

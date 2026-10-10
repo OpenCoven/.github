@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+MODE="${1:-fast}"
+
+case "$MODE" in
+  fast)
+    ./scripts/agent-bootstrap
+    python3 scripts/governance.py validate
+    python3 scripts/governance.py generate --check
+    python3 -m unittest discover -s tests -v
+    ;;
+  full)
+    "$0" fast
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git diff --exit-code -- generated
+    fi
+    ;;
+  *)
+    echo "usage: $0 {fast|full}" >&2
+    exit 2
+    ;;
+esac
