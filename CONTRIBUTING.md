@@ -1,6 +1,8 @@
 # Contributing to OpenCoven
 
-Thank you for your interest in contributing. OpenCoven is MIT licensed and community-driven. We want contributing to be easy, open, and safe for everyone.
+Thank you for your interest in contributing. OpenCoven is community-driven. Licensing varies by repository: consult the repository's own license files and applicable notices rather than assuming one organization-wide license. We want contributing to be easy, open, and safe for everyone.
+
+For the current public-project inventory and maintainer measurement procedure, see [license clarity and adoption measurement](./docs/license-and-measurement.md).
 
 ## Developer Certificate of Origin (DCO)
 
